@@ -14,7 +14,7 @@ scripts (safe to re-run). Apple Silicon and Intel both supported.
 **One line on a brand-new Mac** (installs Command Line Tools, clones, and runs everything):
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/<your-username>/mac-setup/main/bootstrap.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/birrejan/mac-setup/main/bootstrap.sh)
 ```
 
 <details><summary>Or do it manually</summary>
@@ -131,6 +131,29 @@ stow --dir=dotfiles --target="$HOME" ghostty   # (and add it to PACKAGES in scri
 
 ---
 
+## Keeping the repo in sync (`dump.sh`)
+
+The repo links your dotfiles, so edits to `~/.zshrc`, `~/.config/sketchybar/*`, AeroSpace, etc.
+already flow back into it live. For the things that *aren't* symlinks — installed Homebrew packages
+and VS Code extensions — run the sync-back before migrating or whenever you want a fresh snapshot:
+
+```bash
+./scripts/dump.sh        # or: ./install.sh --only dump
+git diff                 # review what changed
+git add -A && git commit -m "sync config" && git push
+```
+
+It:
+- writes a full `brew bundle dump` to **`Brewfile.machine`** (a complete snapshot — never touches your
+  curated `Brewfile`; diff it to promote anything you want installed by default),
+- refreshes `vscode/extensions.txt` from the installed extensions,
+- copies any dotfile that *isn't* already symlinked into the repo (so it's safe on any machine),
+- deliberately skips `~/.gitconfig` (curated) and your secret `~/.gitconfig.local`.
+
+This makes the *next* machine migration effectively one command.
+
+---
+
 ## Git identity & signed commits
 
 `scripts/git.sh` prompts once for your name + email and writes them to `~/.gitconfig.local`
@@ -177,10 +200,11 @@ mac-setup/
 ├── install.sh              # orchestrator
 ├── Brewfile                # everything installed by default
 ├── Brewfile.optional       # opt-in tooling (commented)
+├── Brewfile.machine        # full machine snapshot written by dump.sh (commit it to track state)
 ├── scripts/                # one idempotent script per concern
 │   ├── lib.sh  preflight.sh  homebrew.sh  dotfiles.sh  languages.sh
 │   ├── git.sh  ssh.sh  vscode.sh  iterm2.sh  wm.sh  macos.sh
-│   └── touchid.sh  doctor.sh
+│   └── touchid.sh  doctor.sh  dump.sh
 ├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar)
 ├── iterm2/                 # DynamicProfiles/mac-setup.json (font + One Dark theme)
 └── vscode/                 # settings.json, keybindings.json, extensions.txt

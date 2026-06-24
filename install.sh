@@ -6,7 +6,7 @@
 #   ./install.sh --skip-macos    # everything except the macOS defaults
 #   ./install.sh --only ssh      # run a single step (preflight|homebrew|dotfiles|
 #                                #   languages|git|ssh|vscode|iterm2|wm|macos|
-#                                #   touchid|doctor)
+#                                #   touchid|doctor|dump)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
