@@ -5,7 +5,8 @@
 #   ./install.sh --yes           # assume "yes" to all confirmations
 #   ./install.sh --skip-macos    # everything except the macOS defaults
 #   ./install.sh --only ssh      # run a single step (preflight|homebrew|dotfiles|
-#                                #   languages|git|ssh|vscode|wm|macos)
+#                                #   languages|git|ssh|vscode|iterm2|wm|macos|
+#                                #   touchid|doctor)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -48,17 +49,21 @@ run languages
 run git
 run ssh
 run vscode
+run iterm2
 run wm
 if [[ "$SKIP_MACOS" == "0" ]]; then run macos; else warn "Skipping macOS tweaks (--skip-macos)"; fi
+run touchid
+
+run doctor || true   # report health; never fail the whole install on a check
 
 log "All done 🎉  — manual follow-ups"
 cat <<'EOF'
     1. Restart your terminal (or: exec zsh) to load the new shell config.
     2. Add the printed SSH key to GitHub (Authentication + Signing).
     3. Grant Accessibility permissions: AeroSpace, Rectangle, Raycast, Alfred.
-    4. iTerm2: set the font to "Hack Nerd Font Mono" and import a color preset.
-    5. Sign in to your apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
-    6. Verify a signed commit shows "Verified" on GitHub after step 2.
+    4. Sign in to your apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
+    5. Verify a signed commit shows "Verified" on GitHub after step 2.
 
-    Enable extra tooling any time:  brew bundle --file=Brewfile.optional
+    Re-check anytime:  ./install.sh --only doctor
+    Extra tooling:     brew bundle --file=Brewfile.optional
 EOF

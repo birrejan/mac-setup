@@ -11,29 +11,32 @@ scripts (safe to re-run). Apple Silicon and Intel both supported.
 
 ## Quick start
 
+**One line on a brand-new Mac** (installs Command Line Tools, clones, and runs everything):
+
 ```bash
-# 1. Install the Xcode Command Line Tools (a GUI dialog will pop up).
-#    install.sh also triggers this automatically if missing.
-xcode-select --install
-
-# 2. Clone the repo (HTTPS works before your SSH key exists).
-git clone https://github.com/<your-username>/mac-setup.git ~/mac-setup
-cd ~/mac-setup
-
-# 3. Run it.
-./install.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/<your-username>/mac-setup/main/bootstrap.sh)
 ```
+
+<details><summary>Or do it manually</summary>
+
+```bash
+xcode-select --install                                              # Command Line Tools
+git clone https://github.com/<your-username>/mac-setup.git ~/mac-setup
+cd ~/mac-setup && ./install.sh
+```
+</details>
 
 Useful flags:
 
 ```bash
-./install.sh --yes          # assume "yes" for every confirmation
-./install.sh --skip-macos   # everything except the macOS system tweaks
-./install.sh --only ssh     # run a single step (see list below)
+./install.sh --yes           # assume "yes" for every confirmation
+./install.sh --skip-macos    # everything except the macOS system tweaks
+./install.sh --only ssh      # run a single step (see list below)
+./install.sh --only doctor   # healthcheck: verify everything is set up
 ```
 
 Steps (run in this order, each also runnable via `--only <name>`):
-`preflight` → `homebrew` → `dotfiles` → `languages` → `git` → `ssh` → `vscode` → `wm` → `macos`.
+`preflight` → `homebrew` → `dotfiles` → `languages` → `git` → `ssh` → `vscode` → `iterm2` → `wm` → `macos` → `touchid` → `doctor`.
 
 ---
 
@@ -148,13 +151,12 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
 
 ## Manual follow-ups (printed at the end of `install.sh`)
 
-1. Restart the terminal (`exec zsh`) to load the new config.
+1. Restart the terminal (`exec zsh`) and restart iTerm2 to load the new config + One Dark profile.
 2. Add the SSH key to GitHub (authentication + signing).
 3. **Grant Accessibility permissions** (System Settings → Privacy & Security → Accessibility):
    AeroSpace, Rectangle, Raycast, Alfred. *(Cannot be scripted — macOS security.)*
-4. iTerm2 → set font to **Hack Nerd Font Mono**, import a color preset.
-5. Sign in to apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
-6. Confirm SketchyBar is running: `brew services list | grep sketchybar`.
+4. Sign in to apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
+5. Run the healthcheck: `./install.sh --only doctor` (everything should be green).
 
 ---
 
@@ -171,13 +173,16 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
 
 ```
 mac-setup/
+├── bootstrap.sh            # one-line curl entry (CLT + clone + install)
 ├── install.sh              # orchestrator
 ├── Brewfile                # everything installed by default
 ├── Brewfile.optional       # opt-in tooling (commented)
 ├── scripts/                # one idempotent script per concern
 │   ├── lib.sh  preflight.sh  homebrew.sh  dotfiles.sh  languages.sh
-│   └── git.sh  ssh.sh  vscode.sh  wm.sh  macos.sh
+│   ├── git.sh  ssh.sh  vscode.sh  iterm2.sh  wm.sh  macos.sh
+│   └── touchid.sh  doctor.sh
 ├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar)
+├── iterm2/                 # DynamicProfiles/mac-setup.json (font + One Dark theme)
 └── vscode/                 # settings.json, keybindings.json, extensions.txt
 ```
 
@@ -186,6 +191,9 @@ mac-setup/
 ## Verification
 
 ```bash
+./install.sh --only doctor                 # the easy one: green/red healthcheck of everything
+
+# or check pieces manually:
 bash -n install.sh scripts/*.sh            # syntax
 brew bundle check --file=Brewfile          # all installed?
 stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar   # dry-run symlinks
