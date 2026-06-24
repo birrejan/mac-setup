@@ -30,7 +30,16 @@ while [[ $# -gt 0 ]]; do
 done
 export ASSUME_YES
 
-run() { bash "$ROOT/scripts/$1.sh"; }
+FAILED_STEPS=()
+# Run a step. On failure, warn and keep going — never abort the whole install.
+run() {
+  local name="$1" rc=0
+  bash "$ROOT/scripts/$name.sh" || rc=$?
+  if (( rc != 0 )); then
+    warn "step '$name' failed (exit $rc) — continuing"
+    FAILED_STEPS+=("$name")
+  fi
+}
 
 printf '%s\n' "${C_BOLD}╭────────────────────────────────────────╮${C_RESET}"
 printf '%s\n' "${C_BOLD}│  mac-setup — provisioning this Mac      │${C_RESET}"
@@ -38,8 +47,7 @@ printf '%s\n' "${C_BOLD}╰─────────────────�
 
 if [[ -n "$ONLY" ]]; then
   [[ -f "$ROOT/scripts/$ONLY.sh" ]] || { err "No such step: $ONLY"; exit 1; }
-  run "$ONLY"
-  exit 0
+  exec bash "$ROOT/scripts/$ONLY.sh"   # single step: preserve its real exit code
 fi
 
 run preflight
@@ -54,7 +62,13 @@ run wm
 if [[ "$SKIP_MACOS" == "0" ]]; then run macos; else warn "Skipping macOS tweaks (--skip-macos)"; fi
 run touchid
 
-run doctor || true   # report health; never fail the whole install on a check
+# Healthcheck — report only; never counts as a failed install step.
+bash "$ROOT/scripts/doctor.sh" || true
+
+if (( ${#FAILED_STEPS[@]} )); then
+  warn "Finished with issues in: ${FAILED_STEPS[*]}"
+  warn "Re-run any of them individually, e.g.: ./install.sh --only ${FAILED_STEPS[0]}"
+fi
 
 log "All done 🎉  — manual follow-ups"
 cat <<'EOF'
