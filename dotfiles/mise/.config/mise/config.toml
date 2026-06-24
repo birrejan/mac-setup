@@ -1,0 +1,11 @@
+# mise — runtime version manager. Managed by mac-setup.
+# `mise install` reads this file and installs the versions below globally.
+# Per-project versions: add a .mise.toml or .tool-versions in the project root.
+
+[tools]
+node = "lts"
+python = "3.13"
+
+[settings]
+# Prompt before running untrusted .mise.toml files in project dirs.
+trusted_config_paths = ["~/dev", "~/Projects", "~/Code"]

@@ -1,0 +1,40 @@
+{
+  // Editor — carries forward the old setup (tabSize 2, ruler, trim whitespace)
+  "editor.tabSize": 2,
+  "editor.rulers": [80, 100],
+  "editor.fontFamily": "Hack Nerd Font Mono, Menlo, monospace",
+  "editor.fontSize": 13,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+
+  // Files
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  // Workbench / terminal
+  "workbench.editor.enablePreview": false,
+  "terminal.integrated.fontFamily": "Hack Nerd Font Mono",
+
+  // Git
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "explorer.confirmDragAndDrop": false,
+
+  // Language formatters
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": { "source.organizeImports": "explicit" }
+  },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "eslint.format.enable": false,
+
+  "telemetry.telemetryLevel": "off"
+}

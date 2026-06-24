@@ -1,0 +1,22 @@
+# VS Code extensions — one id per line. Installed by scripts/vscode.sh.
+# Lines starting with # are ignored. Find ids via the marketplace URL or `code --list-extensions`.
+
+# Linting / formatting
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+editorconfig.editorconfig
+
+# Productivity / DX
+formulahendry.auto-rename-tag
+aaron-bond.better-comments
+mikestead.dotenv
+oderwat.indent-rainbow
+christian-kohler.path-intellisense
+yzhang.markdown-all-in-one
+eamodio.gitlens
+usernamehw.errorlens
+
+# Python
+ms-python.python
+ms-python.vscode-pylance
+charliermarsh.ruff

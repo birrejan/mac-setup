@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Local, machine-specific or secret files that must never be committed
+.gitconfig.local
+*.local
+*.bak
+*.bak-*
+
+# Editor / tooling noise
+*.swp
+*~

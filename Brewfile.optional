@@ -1,0 +1,45 @@
+# Brewfile.optional — tooling that is NOT installed by default.
+#
+# Uncomment what you need, then run:
+#   brew bundle --file=Brewfile.optional
+#
+# Everything here is intentionally kept out of the main Brewfile so a fresh
+# machine stays lean. Enable as the new job's stack becomes clear.
+
+# ---------------------------------------------------------------------------
+# DevOps / cloud
+# ---------------------------------------------------------------------------
+# cask "orbstack"            # fast, light Docker + K8s runtime (preferred over Docker Desktop)
+# brew "kubernetes-cli"      # kubectl
+# brew "k9s"                 # K8s TUI
+# brew "helm"
+# brew "opentofu"            # Terraform-compatible IaC (or: brew "terraform")
+# brew "awscli"
+# brew "azure-cli"
+# cask "google-cloud-sdk"
+
+# ---------------------------------------------------------------------------
+# Extra languages / runtimes
+# (mise can also manage these: `mise use -g go@latest`)
+# ---------------------------------------------------------------------------
+# brew "go"
+
+# ---------------------------------------------------------------------------
+# Mobile / React Native
+# ---------------------------------------------------------------------------
+# brew "watchman"
+# brew "cocoapods"
+
+# ---------------------------------------------------------------------------
+# Databases / services
+# ---------------------------------------------------------------------------
+# brew "mysql"
+# brew "memcached"
+
+# ---------------------------------------------------------------------------
+# Networking / misc CLI
+# ---------------------------------------------------------------------------
+# brew "nmap"
+# brew "arp-scan"
+# brew "tmux"
+# cask "ngrok"

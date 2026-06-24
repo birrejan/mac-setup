@@ -1,0 +1,23 @@
+# Global gitignore (git config core.excludesfile = ~/.gitignore_global)
+
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+Icon
+
+# Editors
+*.swp
+*~
+.idea/
+
+# Local env / secrets (defense in depth — still ignore per-project too)
+.env.local
+.env.*.local
+
+# Python caches
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/

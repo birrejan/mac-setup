@@ -1,0 +1,60 @@
+# Starship prompt — managed by mac-setup. Needs a Nerd Font (Hack Nerd Font).
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = true
+command_timeout = 1000
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$golang\
+$rust\
+$cmd_duration\
+$line_break\
+$character"""
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold cyan"
+read_only = " 󰌾"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "bold yellow"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+
+[nodejs]
+symbol = " "
+format = "[$symbol($version )]($style)"
+style = "bold green"
+
+[python]
+symbol = " "
+format = '[$symbol($version )]($style)'
+style = "bold yellow"
+
+[golang]
+symbol = " "
+format = "[$symbol($version )]($style)"
+style = "bold cyan"
+
+[rust]
+symbol = " "
+format = "[$symbol($version )]($style)"
+style = "bold red"
+
+[cmd_duration]
+min_time = 2000
+format = "[ $duration]($style)"
+style = "bold yellow"
