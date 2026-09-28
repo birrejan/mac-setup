@@ -8,6 +8,8 @@ Icon
 # Local, machine-specific or secret files that must never be committed
 .gitconfig.local
 *.local
+# ...except the Stow package for ~/.local/bin, which is not a local override
+!dotfiles/bin/.local/
 *.bak
 *.bak-*
 

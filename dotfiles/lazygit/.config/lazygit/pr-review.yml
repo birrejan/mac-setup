@@ -1,0 +1,44 @@
+# Loaded on top of config.yml only inside `pr-review` sessions (via LG_CONFIG_FILE).
+# Committing and stashing make no sense in a review worktree, so these take over
+# c / C / S in the Files panel.
+customCommands:
+  - key: c
+    context: files
+    description: Comment on a line of this file (adds to your pending review)
+    prompts:
+      - type: menuFromCommand
+        title: Line to comment on (/ to filter)
+        key: Target
+        command: 'pr-review lines {{.SelectedFile.Name | quote}}'
+        filter: '^(?P<target>[RLF]:\d+)\t(?P<label>.*)$'
+        valueFormat: '{{ .target }}'
+        labelFormat: '{{ .label }}'
+      - type: input
+        title: 'Comment (\n for a new line)'
+        key: Body
+    command: 'pr-review comment {{.SelectedFile.Name | quote}} {{.Form.Target}} {{.Form.Body | quote}}'
+    loadingText: Adding comment
+    output: log
+  - key: C
+    context: files
+    description: Show your pending review comments
+    command: pr-review pending
+    output: popup
+    outputTitle: Pending review comments
+  - key: S
+    context: files
+    description: Submit the review
+    prompts:
+      - type: menu
+        title: Submit review as
+        key: Event
+        options:
+          - { value: COMMENT, name: Comment, key: c }
+          - { value: APPROVE, name: Approve, key: a }
+          - { value: REQUEST_CHANGES, name: Request changes, key: r }
+      - type: input
+        title: 'Summary (optional, \n for a new line)'
+        key: Body
+    command: 'pr-review submit {{.Form.Event}} {{.Form.Body | quote}}'
+    loadingText: Submitting review
+    output: log

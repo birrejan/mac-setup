@@ -13,6 +13,9 @@ tap "felixkratz/formulae" # SketchyBar custom menu bar
 # ---------------------------------------------------------------------------
 brew "git"                    # newer git than the system one
 brew "gh"                     # GitHub CLI
+brew "lazygit"                # terminal UI for git, also the PR review view (see README)
+brew "git-delta"              # syntax-highlighted diffs for git, lazygit and gh-dash
+brew "go"                     # builds gh-dash from the birrejan/gh-dash fork
 brew "stow"                   # symlink farm manager for the dotfiles
 brew "starship"               # cross-shell prompt
 brew "mise"                   # runtime version manager (node, python, ...)

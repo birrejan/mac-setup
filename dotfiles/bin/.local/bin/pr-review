@@ -1,0 +1,335 @@
+#!/usr/bin/env bash
+# pr-review <repo-path> <pr-number> [<base-branch> <owner/name>]
+#
+# Opens a PR in lazygit without touching the repo's own checkout. The PR head is
+# checked out into a throwaway detached worktree and soft-reset to its merge-base
+# with the PR's base branch, so lazygit's Files panel shows the whole PR diff as
+# staged changes. The worktree is removed when lazygit exits. Passing the base
+# branch and repo (gh-dash knows both) saves a GitHub round trip on the way in.
+#
+# That lazygit session also loads pr-review.yml from lazygit's config dir, whose
+# keybindings build a pending GitHub review through these subcommands (they read
+# the PR from PR_REVIEW_REPO=owner/name and PR_REVIEW_PR):
+#   pr-review lines <path>                        diff lines of <path>, for the line picker
+#   pr-review comment <path> <R|L|F>:<line> <body> add a thread to your pending review
+#   pr-review pending                             list your pending review's comments
+#   pr-review submit [EVENT [body]]               submit it; prompts when EVENT is omitted
+# A literal \n in a body becomes a newline, since lazygit prompts are single-line.
+#
+# pr-review ai <repo-path> <pr-number> [<base-branch> <owner/name>] has Claude run
+# the second-review skill on the PR in the background and adds each finding to
+# your pending review, then sends a macOS notification. Nothing is visible to
+# anyone else until you submit, so you can edit or drop what it wrote first.
+set -euo pipefail
+
+die() { echo "pr-review: $*" >&2; exit 1; }
+
+# Prints "<pr node id>\t<your pending review id, or empty>".
+lookup() {
+  gh api graphql -f owner="${PR_REVIEW_REPO%/*}" -f name="${PR_REVIEW_REPO#*/}" -F number="$PR_REVIEW_PR" -f query='
+    query($owner: String!, $name: String!, $number: Int!) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+          id
+          reviews(states: PENDING, first: 20) { nodes { id viewerDidAuthor } }
+        }
+      }
+    }' --jq '.data.repository.pullRequest | [.id, ([.reviews.nodes[] | select(.viewerDidAuthor) | .id][0] // "")] | @tsv'
+}
+
+lines() {
+  printf 'F:0\t(whole file)\n'
+  # Myers, git's default, so the hunks line up with the diff GitHub accepts comments on.
+  git diff --cached --no-color --no-ext-diff --diff-algorithm=myers -U3 -- "$1" | awk '
+    /^@@/ { split($0, h, " "); old = substr(h[2], 2) + 0; new = substr(h[3], 2) + 0; hunk = 1; next }
+    !hunk { next }
+    { text = substr($0, 2); gsub(/\t/, "  ", text) }
+    /^\+/ { printf "R:%d\t%5d + %s\n", new, new, text; new++; next }
+    /^-/  { printf "L:%d\t%5d - %s\n", old, old, text; old++; next }
+    /^ /  { printf "R:%d\t%5d   %s\n", new, new, text; old++; new++ }'
+}
+
+# add_thread <path> <R|L|F> <line> <body>: adds a thread to your pending review,
+# starting one if needed.
+add_thread() {
+  local path=$1 side=$2 line=$3 body=$4 out pr review
+  out=$(lookup)
+  IFS=$'\t' read -r pr review <<<"$out"
+
+  if [[ -z $review ]]; then
+    review=$(gh api graphql -f pr="$pr" -f sha="$PR_REVIEW_HEAD" -f query='
+      mutation($pr: ID!, $sha: GitObjectID!) {
+        addPullRequestReview(input: {pullRequestId: $pr, commitOID: $sha}) { pullRequestReview { id } }
+      }' --jq .data.addPullRequestReview.pullRequestReview.id)
+  fi
+
+  local args=(-f review="$review" -f path="$path" -f body="$body")
+  if [[ $side == F ]]; then
+    args+=(-f subject=FILE)
+  else
+    args+=(-f subject=LINE -F line="$line" -f side="$([[ $side == L ]] && echo LEFT || echo RIGHT)")
+  fi
+  gh api graphql "${args[@]}" -f query='
+    mutation($review: ID!, $path: String!, $body: String!, $subject: PullRequestReviewThreadSubjectType,
+             $line: Int, $side: DiffSide) {
+      addPullRequestReviewThread(input: {pullRequestReviewId: $review, path: $path, body: $body,
+                                         subjectType: $subject, line: $line, side: $side}) { thread { id } }
+    }' --jq '.data.addPullRequestReviewThread.thread.id // error("GitHub dropped the comment; the line is outside the diff")' >/dev/null
+}
+
+comment() {
+  local path=$1 side=${2%%:*} line=${2#*:} body=${3//\\n/$'\n'}
+  [[ -n $body ]] || die "empty comment"
+  add_thread "$path" "$side" "$line" "$body"
+  echo "Pending comment on #$PR_REVIEW_PR at $path$([[ $side == F ]] || echo ":$line") (only you can see it until you submit)"
+}
+
+pending() {
+  local out pr review
+  out=$(lookup)
+  IFS=$'\t' read -r pr review <<<"$out"
+  [[ -n $review ]] || { echo "No pending review on #$PR_REVIEW_PR."; return; }
+  gh api graphql -f review="$review" -f query='
+    query($review: ID!) {
+      node(id: $review) { ... on PullRequestReview { comments(first: 100) { nodes { path line body } } } }
+    }' --jq '.data.node.comments.nodes[] | "\(.path)\(if .line then ":\(.line)" else "" end)\n  \(.body | gsub("\n"; "\n  "))\n"'
+}
+
+submit() {
+  local event=${1:-} body=${2:-} out pr review
+  if [[ -z $event ]]; then
+    PS3="Review #$PR_REVIEW_PR as: "
+    select event in COMMENT APPROVE REQUEST_CHANGES; do [[ -n $event ]] && break; done
+    [[ -n $event ]] || exit 1
+    read -rep "Summary (optional): " body
+  fi
+  body=${body//\\n/$'\n'}
+  out=$(lookup)
+  IFS=$'\t' read -r pr review <<<"$out"
+
+  if [[ -n $review ]]; then
+    gh api graphql -f review="$review" -f event="$event" -f body="$body" -f query='
+      mutation($review: ID!, $event: PullRequestReviewEvent!, $body: String) {
+        submitPullRequestReview(input: {pullRequestReviewId: $review, event: $event, body: $body}) { pullRequestReview { url } }
+      }' --jq .data.submitPullRequestReview.pullRequestReview.url
+  else
+    gh api graphql -f pr="$pr" -f event="$event" -f body="$body" -f query='
+      mutation($pr: ID!, $event: PullRequestReviewEvent!, $body: String) {
+        addPullRequestReview(input: {pullRequestId: $pr, event: $event, body: $body}) { pullRequestReview { url } }
+      }' --jq .data.addPullRequestReview.pullRequestReview.url
+  fi
+}
+
+# set_pr <repo-path> <pr-number> [<base-branch> <owner/name>]
+set_pr() {
+  if [[ $# -ne 2 && $# -ne 4 ]]; then
+    echo "usage: pr-review [ai] <repo-path> <pr-number> [<base-branch> <owner/name>]" >&2
+    exit 64
+  fi
+  repo=$(git -C "$1" rev-parse --show-toplevel)
+  pr=$2
+  base=${3:-}
+  nwo=${4:-}
+}
+
+# Fills in base and nwo from GitHub unless the caller passed them.
+resolve_pr() {
+  [[ -z $base || -z $nwo ]] || return 0
+  local url
+  IFS=$'\t' read -r base url < <(cd "$repo" && gh pr view "$pr" --json baseRefName,url --jq '[.baseRefName, .url] | @tsv')
+  [[ -n ${base:-} ]] || die "could not read PR #$pr"
+  nwo=${url#https://github.com/}
+  nwo=${nwo%/pull/*}
+}
+
+# Checks the PR head out, detached, into $dir through $ref and prints its merge-base.
+checkout_pr() {
+  git -C "$repo" fetch -q origin "+refs/pull/$pr/head:$ref" "+refs/heads/$base:refs/remotes/origin/$base"
+  git -C "$repo" worktree add -q --detach "$dir" "$ref"
+  git -C "$repo" merge-base "origin/$base" "$ref"
+}
+
+cleanup() {
+  git -C "$repo" worktree remove --force "$dir" 2>/dev/null || rm -rf "$dir"
+  git -C "$repo" worktree prune
+  git -C "$repo" update-ref -d "$ref" 2>/dev/null || true
+}
+
+notify() {
+  osascript - "$1" "$2" >/dev/null 2>&1 <<'APPLESCRIPT' || true
+on run argv
+  display notification (item 2 of argv) with title (item 1 of argv)
+end run
+APPLESCRIPT
+}
+
+AI_REVIEW_SCHEMA='{
+  "type": "object", "additionalProperties": false,
+  "required": ["verdict", "summary", "findings"],
+  "properties": {
+    "verdict": {"enum": ["APPROVE", "FINDINGS"]},
+    "summary": {"type": "string"},
+    "findings": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "line", "side", "body"],
+      "properties": {
+        "path": {"type": "string"},
+        "line": {"type": "integer"},
+        "side": {"enum": ["RIGHT", "LEFT"]},
+        "body": {"type": "string"}
+      }
+    }}
+  }
+}'
+
+ai() {
+  set_pr "$@"
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/pr-review" name
+  name="$(basename "$repo")-$pr-ai"
+  if [[ -z ${PR_REVIEW_AI_WORKER:-} ]]; then
+    mkdir -p "$cache"
+    PR_REVIEW_AI_WORKER=1 nohup "$0" ai "$@" >"$cache/$name.log" 2>&1 </dev/null &
+    echo "Claude is reviewing #$pr; its findings will land in your pending review."
+    return
+  fi
+
+  ref="refs/pr-review/$pr-ai"
+  dir="$cache/$name"
+  log="$cache/$name.log"
+  lock="$cache/$name.lock"
+  if ! mkdir "$lock" 2>/dev/null; then
+    if kill -0 "$(cat "$lock/pid" 2>/dev/null)" 2>/dev/null; then
+      notify "Claude is already reviewing #$pr" "Wait for its notification."
+      return 1
+    fi
+    rm -rf "$lock"
+    mkdir "$lock"
+  fi
+  echo $$ >"$lock/pid"
+  trap 'status=$?; cleanup; rm -rf "$lock"; ((status == 0)) || notify "Claude review of #$pr failed" "See $log"' EXIT
+
+  cleanup
+  resolve_pr
+  local merge_base result
+  merge_base=$(checkout_pr)
+  export PR_REVIEW_REPO=$nwo PR_REVIEW_PR=$pr
+  export PR_REVIEW_HEAD
+  PR_REVIEW_HEAD=$(git -C "$repo" rev-parse "$ref")
+  echo "Reviewing $nwo#$pr at $PR_REVIEW_HEAD (merge-base $merge_base)"
+  result=$(review_with_claude "$merge_base")
+  post_findings "$result"
+}
+
+review_with_claude() {
+  local merge_base=$1 checklist prompt
+  checklist="$HOME/Projects/.orchestrator/review-checklist-$(basename "$repo").md"
+  prompt="Use the second-review skill to review PR #$pr in $nwo"
+  [[ -f $checklist ]] && prompt+=" against the checklist at $checklist"
+  prompt+=". Your working directory is a checkout of the PR head, and \`git diff --diff-algorithm=myers $merge_base\` shows exactly the PR's changes.
+
+Return every confirmed finding and every advisory note in findings, each anchored to a line inside that diff: side RIGHT with the new file's line number for an added or unchanged line, side LEFT with the old file's line number for a removed line. Write each body as the review comment the author will read: the problem, the concrete input or state that breaks, and what to change. Phrase advisory notes as suggestions. Put the verdict and a one-sentence summary in the other fields."
+  (cd "$dir" && claude -p "$prompt" --output-format json --json-schema "$AI_REVIEW_SCHEMA" \
+    --no-session-persistence --add-dir "$HOME/Projects/.orchestrator" \
+    --disallowedTools Edit Write NotebookEdit \
+    --allowedTools Skill Read Grep Glob "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" \
+    "Bash(git grep:*)" "Bash(gh pr view:*)" "Bash(gh pr diff:*)")
+}
+
+post_findings() {
+  local result=$1 verdict summary path side line body posted=0 unposted=0
+  if ! jq -e '.is_error == false and .structured_output != null' <<<"$result" >/dev/null 2>&1; then
+    echo "$result"
+    die "Claude returned no review"
+  fi
+  verdict=$(jq -r .structured_output.verdict <<<"$result")
+  summary=$(jq -r .structured_output.summary <<<"$result")
+  echo "Verdict: $verdict. $summary (cost \$$(jq -r '.total_cost_usd // "?"' <<<"$result"))"
+
+  while IFS=$'\t' read -r path side line body; do
+    body=$(base64 -d <<<"$body")
+    printf '\n%s:%s (%s)\n%s\n' "$path" "$line" "$side" "$body"
+    # GitHub rejects a line outside the diff; keep the finding as a file comment.
+    if add_thread "$path" "$side" "$line" "$body" || add_thread "$path" F 0 "Line $line: $body"; then
+      posted=$((posted + 1))
+    else
+      unposted=$((unposted + 1))
+      printf 'Could not post %s:%s\n%s\n\n' "$path" "$line" "$body"
+    fi
+  done < <(jq -r '.structured_output.findings[]
+    | [.path, (if .side == "LEFT" then "L" else "R" end), .line, (.body | @base64)] | @tsv' <<<"$result")
+
+  echo "Posted $posted, could not post $unposted"
+  if ((posted + unposted == 0)); then
+    notify "Claude found nothing on #$pr" "$summary"
+  elif ((unposted == 0)); then
+    notify "Claude left $posted comments on #$pr" "They're in your pending review: press i on the PR, then C to list them."
+  else
+    notify "Claude left $posted comments on #$pr" "$unposted more couldn't be posted; they're in $log"
+  fi
+}
+
+case ${1:-} in
+  ai)
+    shift
+    ai "$@"
+    exit
+    ;;
+  lines | comment | pending | submit)
+    cmd=$1
+    shift
+    "$cmd" "$@"
+    exit
+    ;;
+esac
+
+set_pr "$@"
+ref="refs/pr-review/$pr"
+dir="${XDG_CACHE_HOME:-$HOME/.cache}/pr-review/$(basename "$repo")-$pr"
+setup_log=$(mktemp)
+exec 3>&2
+
+# Keeps the terminal on a blank alternate screen while the worktree is set up and
+# torn down, so the shell's own screen doesn't flash up between gh-dash and lazygit.
+hold_screen() {
+  [[ -t 1 ]] || return 0
+  printf '\e[?1049h\e[?25l\e[H\e[2J'
+  [[ -z ${1:-} ]] || printf '\e[2;3H%s' "$1"
+}
+release_screen() {
+  [[ -t 1 ]] || return 0
+  printf '\e[?25h\e[?1049l'
+}
+
+on_exit() {
+  local status=$?
+  # A failed setup step lands here with stderr still pointing at the log.
+  exec 2>&3
+  cleanup
+  release_screen
+  if ((status != 0)); then
+    cat "$setup_log" >&2
+    if [[ -t 0 ]]; then read -rsn1 -p "pr-review failed. Press any key to go back." || true; fi
+  fi
+  rm -f "$setup_log"
+}
+
+hold_screen "Opening PR #$pr in lazygit…"
+cleanup
+trap on_exit EXIT
+
+{
+  resolve_pr
+  merge_base=$(checkout_pr)
+  git -C "$dir" reset -q --soft "$merge_base"
+} 2>"$setup_log"
+
+lg_config_dir=$(lazygit --print-config-dir)
+export PR_REVIEW_PR=$pr
+export PR_REVIEW_REPO=$nwo
+export PR_REVIEW_HEAD
+PR_REVIEW_HEAD=$(git -C "$repo" rev-parse "$ref")
+export LG_CONFIG_FILE="${LG_CONFIG_FILE:-$lg_config_dir/config.yml},$lg_config_dir/pr-review.yml"
+
+cd "$dir"
+lazygit
+hold_screen

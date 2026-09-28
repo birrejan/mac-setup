@@ -5,7 +5,7 @@
 #   ./install.sh --yes           # assume "yes" to all confirmations
 #   ./install.sh --skip-macos    # everything except the macOS defaults
 #   ./install.sh --only ssh      # run a single step (preflight|homebrew|dotfiles|
-#                                #   languages|git|ssh|vscode|iterm2|wm|macos|
+#                                #   languages|gh-dash|git|ssh|vscode|iterm2|wm|macos|
 #                                #   touchid|doctor|dump)
 set -euo pipefail
 
@@ -54,6 +54,7 @@ run preflight
 run homebrew
 run dotfiles
 run languages
+run gh-dash
 run git
 run ssh
 run vscode

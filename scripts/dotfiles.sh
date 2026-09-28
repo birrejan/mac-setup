@@ -7,7 +7,7 @@ log "Dotfiles (GNU Stow)"
 load_brew
 has stow || { err "stow is not installed (run scripts/homebrew.sh first)"; exit 1; }
 
-PACKAGES=(zsh git starship mise aerospace sketchybar)
+PACKAGES=(zsh git starship mise aerospace sketchybar lazygit gh-dash bin)
 
 # Back up any pre-existing REAL files that would collide, so stow won't refuse.
 for pkg in "${PACKAGES[@]}"; do

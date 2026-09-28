@@ -13,7 +13,7 @@ log "Doctor — verifying setup"
 load_brew
 
 log "CLI tools"
-for c in brew git gh stow starship mise uv fzf rg fd bat eza zoxide jq code; do
+for c in brew git gh lazygit delta go stow starship mise uv fzf rg fd bat eza zoxide jq code; do
   if has "$c"; then pass "$c"; else fail "$c (missing)"; fi
 done
 
@@ -24,7 +24,8 @@ check "python available" bash -c 'mise which python 2>/dev/null || command -v py
 log "Dotfiles (should be symlinks)"
 for f in .zshrc .zshenv .gitconfig .gitignore_global \
          .config/starship.toml .config/mise/config.toml \
-         .config/aerospace/aerospace.toml .config/sketchybar/sketchybarrc; do
+         .config/aerospace/aerospace.toml .config/sketchybar/sketchybarrc \
+         .config/lazygit/config.yml .config/gh-dash/config.yml .local/bin/pr-review; do
   if [[ -L "$HOME/$f" ]]; then pass "$f"
   elif [[ -e "$HOME/$f" ]]; then fail "$f (exists but not a symlink)"
   else fail "$f (missing)"; fi
@@ -32,6 +33,7 @@ done
 
 log "Git & SSH"
 check "git identity set"        bash -c 'git config user.email'
+check "gh dash extension"       test -e "${XDG_DATA_HOME:-$HOME/.local/share}/gh/extensions/gh-dash"
 if [[ "$(git config --get commit.gpgsign 2>/dev/null)" == "true" ]]; then
   pass "commit signing enabled"
 else

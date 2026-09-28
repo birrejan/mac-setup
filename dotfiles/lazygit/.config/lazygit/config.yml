@@ -1,0 +1,9 @@
+git:
+  # `|` cycles through these in the diff view.
+  diffRenderers:
+    - command: delta --paging=never --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
+      name: delta
+    - command: delta --paging=never --line-numbers --side-by-side
+      name: delta side-by-side
+    - type: rawGit
+      name: plain git

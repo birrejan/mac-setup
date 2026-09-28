@@ -36,7 +36,7 @@ Useful flags:
 ```
 
 Steps (run in this order, each also runnable via `--only <name>`):
-`preflight` → `homebrew` → `dotfiles` → `languages` → `git` → `ssh` → `vscode` → `iterm2` → `wm` → `macos` → `touchid` → `doctor`.
+`preflight` → `homebrew` → `dotfiles` → `languages` → `gh-dash` → `git` → `ssh` → `vscode` → `iterm2` → `wm` → `macos` → `touchid` → `doctor`.
 
 ---
 
@@ -46,6 +46,8 @@ Steps (run in this order, each also runnable via `--only <name>`):
 | Tool | Purpose |
 |------|---------|
 | `git`, `gh` | Git + GitHub CLI |
+| `lazygit`, `git-delta` | terminal UI for git; syntax-highlighted diffs in git, lazygit and gh-dash |
+| `gh dash` | PR dashboard, built from the [birrejan/gh-dash](https://github.com/birrejan/gh-dash) fork with `go` (see [PR review](#pr-review-in-the-terminal-gh-dash--lazygit)) |
 | `stow` | symlinks the dotfiles into `$HOME` |
 | `starship` | shell prompt |
 | `mise` | runtime version manager (Node, Python) |
@@ -71,7 +73,8 @@ Steps (run in this order, each also runnable via `--only <name>`):
 
 ### Dotfiles (symlinked by Stow)
 `~/.zshrc`, `~/.zshenv`, `~/.gitconfig`, `~/.gitignore_global`, `~/.config/starship.toml`,
-`~/.config/mise/config.toml`, `~/.config/aerospace/aerospace.toml`, `~/.config/sketchybar/*`.
+`~/.config/mise/config.toml`, `~/.config/aerospace/aerospace.toml`, `~/.config/sketchybar/*`,
+`~/.config/lazygit/*`, `~/.config/gh-dash/config.yml`, `~/.local/bin/pr-review`.
 
 ### macOS defaults (`scripts/macos.sh`)
 Fast key repeat, no press-and-hold, tap-to-click, dark mode, Finder (show extensions / path bar /
@@ -105,6 +108,47 @@ These configs were captured from a working machine and are reproduced **verbatim
 
 > The `aerospace.toml` `[workspace-to-monitor-force-assignment]` block references
 > `"Built-in Retina Display"` — harmless on a single-display Mac; edit it for your monitor layout.
+
+---
+
+## PR review in the terminal (gh-dash + lazygit)
+
+`gh dash` lists the PRs that need you, and a PR opens in lazygit in the same tab for review.
+
+**gh-dash comes from a fork:** [**birrejan/gh-dash**](https://github.com/birrejan/gh-dash), branch
+`personal`. It is upstream [dlvhdr/gh-dash](https://github.com/dlvhdr/gh-dash) with these changes
+merged in, each also on its own branch of the fork so it can go upstream:
+
+| Branch | Change |
+|--------|--------|
+| `feat/toggle-draft` | `W` toggles a PR between ready for review and draft |
+| `feat/background-keybindings` | custom keys can set `background: true` and run without leaving the dashboard |
+| `fix/keybinding-merge-keeps-non-strings` | non-string keybinding fields (like `background`) survive the config merge |
+| `fix/watch-checks-final-state` | `w`'s notification reports the checks' real final state |
+| `fix/ignore-app-check-suites-that-never-start` | apps that never report a check (Supabase, Claude) no longer show as "in progress" |
+
+`scripts/gh-dash.sh` clones the fork to `~/.local/src/gh-dash`, builds it and installs it as the
+`gh dash` extension. It never touches an existing checkout. To update:
+`cd ~/.local/src/gh-dash && git pull && go build .`
+
+Keys on a PR in gh-dash (`~/.config/gh-dash/config.yml`):
+
+| Key | Action |
+|-----|--------|
+| `i` | review in lazygit: the whole PR shows as staged changes in a throwaway worktree |
+| `f` | submit your review (approve / request changes / comment) |
+| `I` | Claude reviews first; its findings land in your pending review |
+| `T` | jump to the Claude task session working on the PR |
+| `W` | toggle draft / ready for review |
+| `R` | rebase the PR on its base branch, in the background |
+
+Inside a review in lazygit (Files panel, `~/.config/lazygit/pr-review.yml`): `c` comments on a
+line, `C` lists your pending comments, `S` submits the review. Comments stay pending, visible only
+to you, until you submit. `|` cycles delta, side-by-side and plain diffs.
+
+The review commands live in `~/.local/bin/pr-review`. `I` and `T` also need the Claude Code
+orchestrator in `~/Projects/.orchestrator` and its `second-review` skill; without them the
+dashboard shows an error in its footer.
 
 ---
 
@@ -202,10 +246,11 @@ mac-setup/
 ├── Brewfile.optional       # opt-in tooling (commented)
 ├── Brewfile.machine        # full machine snapshot written by dump.sh (commit it to track state)
 ├── scripts/                # one idempotent script per concern
-│   ├── lib.sh  preflight.sh  homebrew.sh  dotfiles.sh  languages.sh
+│   ├── lib.sh  preflight.sh  homebrew.sh  dotfiles.sh  languages.sh  gh-dash.sh
 │   ├── git.sh  ssh.sh  vscode.sh  iterm2.sh  wm.sh  macos.sh
 │   └── touchid.sh  doctor.sh  dump.sh
-├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar)
+├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar,
+│                           #   lazygit, gh-dash, bin)
 ├── iterm2/                 # DynamicProfiles/mac-setup.json (font + One Dark theme)
 └── vscode/                 # settings.json, keybindings.json, extensions.txt
 ```
@@ -220,7 +265,7 @@ mac-setup/
 # or check pieces manually:
 bash -n install.sh scripts/*.sh            # syntax
 brew bundle check --file=Brewfile          # all installed?
-stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar   # dry-run symlinks
+stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar lazygit gh-dash bin   # dry-run symlinks
 mise current && node -v && python -V        # runtimes
 git config --get commit.gpgsign             # → true
 brew services list | grep sketchybar        # → started
