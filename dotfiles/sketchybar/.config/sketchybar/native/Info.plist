@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleExecutable</key><string>ToolbarBridge</string>
+  <key>CFBundleIdentifier</key><string>local.aerotoolbar.bridge</string>
+  <key>CFBundleName</key><string>Aero Toolbar</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>LSUIElement</key><true/>
+  <key>NSCalendarsFullAccessUsageDescription</key>
+  <string>Show upcoming meeting countdowns and open meeting links from your toolbar. The toolbar only reads events; it does not change them.</string>
+</dict></plist>

@@ -1,20 +1,41 @@
-#!/bin/sh
+#!/bin/bash
 
-# The volume_change event supplies a $INFO variable in which the current volume
-# percentage is passed to the script.
-
-if [ "$SENDER" = "volume_change" ]; then
-  VOLUME=$INFO
-
-  case $VOLUME in
-    [6-9][0-9]|100) ICON="􀊩"
+# Mouse controls use AeroSpace; macOS volume events refresh the indicator.
+# SketchyBar reports effective volume as zero while the output is muted.
+case "$SENDER" in
+  mouse.clicked)
+    if [ "${BUTTON:-left}" = right ]; then
+      exec "$CONFIG_DIR/plugins/toolbar.sh" audio
+    fi
+    [ "${BUTTON:-left}" = left ] || exit 0
+    aerospace volume mute-toggle --no-gui
+    exit $?
     ;;
-    [3-5][0-9]) ICON="􀊥"
+  mouse.scrolled)
+    [[ "${SCROLL_DELTA:-}" =~ ^-?[0-9]+$ ]] || exit 0
+    if [ "$SCROLL_DELTA" -gt 0 ]; then
+      aerospace volume up --no-gui
+    elif [ "$SCROLL_DELTA" -lt 0 ]; then
+      aerospace volume down --no-gui
+    fi
+    exit $?
     ;;
-    [1-9]|[1-2][0-9]) ICON="􀊡"
+  volume_change)
+    [[ "${INFO:-}" =~ ^[0-9]+([.][0-9]+)?$ ]] || exit 0
+    VOLUME=$(awk -v volume="$INFO" 'BEGIN {
+      if (volume < 0) volume = 0;
+      if (volume > 100) volume = 100;
+      printf "%.0f", volume
+    }')
     ;;
-    *) ICON="􀊣"
-  esac
+  *) exit 0 ;;
+esac
 
-  sketchybar --set $NAME icon="$ICON" label="$VOLUME%"
-fi
+case $VOLUME in
+  [6-9][0-9]|100) ICON="􀊩" ;;
+  [3-5][0-9]) ICON="􀊥" ;;
+  [1-9]|[1-2][0-9]) ICON="􀊡" ;;
+  *) ICON="􀊣" ;;
+esac
+
+sketchybar --set "$NAME" icon="$ICON" label="$VOLUME%"

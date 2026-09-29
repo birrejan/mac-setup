@@ -33,12 +33,11 @@ after-startup-command = [
 exec-on-workspace-change = [
   '/bin/bash',
   '-c',
-  'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE',
+  'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE; "$HOME/.config/sketchybar/plugins/toolbar.sh" ensure-workspace "$AEROSPACE_FOCUSED_WORKSPACE"',
 ]
 
 on-focus-changed = [
-  # 'exec-and-forget sketchybar --trigger front_app_switched',
-  # 'exec-and-forget sketchybar --trigger update_windows',
+  'exec-and-forget /opt/homebrew/bin/sketchybar --trigger aerospace_workspace_change',
 ]
 
 # Start AeroSpace at login
@@ -194,6 +193,10 @@ alt-shift-space = 'layout floating tiling'
 
 
 alt-shift-c = 'reload-config'
+
+# Toolbar controls: presentation mode and the on-demand tools menu.
+alt-shift-p = 'exec-and-forget "$HOME/.config/sketchybar/plugins/toolbar.sh" presentation'
+alt-shift-t = 'exec-and-forget "$HOME/.config/sketchybar/plugins/toolbar.sh" menu'
 
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode

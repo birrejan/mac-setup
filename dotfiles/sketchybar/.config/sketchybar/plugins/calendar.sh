@@ -1,3 +1,4 @@
 #!/bin/bash
 
-sketchybar --set $NAME label="$(date +'%a %d %b %I:%M %p')" 
+# A muted date and a brighter, tabular 24-hour clock.
+sketchybar --set "$NAME" icon="$(date +'%a %d %b')" label="$(date +'%H:%M')"
