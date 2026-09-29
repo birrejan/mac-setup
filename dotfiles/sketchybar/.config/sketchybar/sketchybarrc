@@ -35,4 +35,6 @@ source "$ITEM_DIR/memory.sh"
 source "$ITEM_DIR/capture.sh"
 source "$ITEM_DIR/controls.sh"
 
+# Place the conditional RAM and capture indicators safely around camera notches.
+source "$ITEM_DIR/notch.sh"
 sketchybar --update
