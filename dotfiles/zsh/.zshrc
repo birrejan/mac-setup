@@ -66,6 +66,8 @@ alias gpl='git pull'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias reload='exec zsh'
+alias nosleep-on='sudo pmset -a disablesleep 1'
+alias nosleep-off='sudo pmset -a disablesleep 0'
 
 # --- Syntax highlighting (MUST be sourced last) ----------------------------
 [[ -r "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] \
