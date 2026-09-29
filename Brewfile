@@ -41,6 +41,7 @@ brew "zsh-completions"
 
 # Window manager + menu bar
 brew "sketchybar"             # the custom menu bar (config under dotfiles/sketchybar)
+brew "FelixKratz/formulae/borders"  # focused-window border for AeroSpace (config under dotfiles/borders)
 
 # ---------------------------------------------------------------------------
 # Applications (casks)

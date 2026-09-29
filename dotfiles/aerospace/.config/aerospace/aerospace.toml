@@ -11,6 +11,9 @@ after-login-command = []
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
 after-startup-command = [
   'exec-and-forget brew services start sketchybar',
+  # Focus indicator for tiled windows -- absolute path because the launchd
+  # environment AeroSpace starts in does not always have Homebrew on PATH.
+  'exec-and-forget /opt/homebrew/bin/borders',
 ]
 
 # Notify Sketchybar about workspace change
@@ -70,12 +73,15 @@ preset = 'qwerty'
 #                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
 #                 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 [gaps]
-inner.horizontal = 10
-inner.vertical = 10
-outer.left = 10
-outer.bottom = 10
-outer.top = 42     # sketchybar height
-outer.right = 10
+# Leave 5pt of clear space beside the focused window's 7pt orange outline.
+inner.horizontal = 12
+inner.vertical = 12
+outer.left = 5
+outer.bottom = 5
+# Five-point margins around the usable area. On the main screen, add the 37pt
+# toolbar; the built-in display already reserves 32pt for its camera notch.
+outer.top = [{ monitor.secondary = 5 }, { monitor."built-in retina display" = 10 }, { monitor.main = 42 }, 5]
+outer.right = 5
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes

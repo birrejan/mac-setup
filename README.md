@@ -55,6 +55,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 | `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `jq`, `btop` | modern CLI workflow |
 | `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions` | zsh plugins (no framework) |
 | `sketchybar` | the custom menu bar |
+| `borders` | outlines the focused window (JankyBorders) |
 
 ### Languages (via `mise`)
 **Node.js (LTS)** + **Python 3.13**, declared in `dotfiles/mise/.config/mise/config.toml`.
@@ -91,6 +92,9 @@ These configs were captured from a working machine and are reproduced **verbatim
   on workspace changes. Config: `~/.config/aerospace/aerospace.toml`.
 - **SketchyBar** is the custom top bar (workspaces, front app, media, clock, battery, CPU, volume).
   It runs as a Homebrew service. Config: `~/.config/sketchybar/`.
+- **JankyBorders** (`borders`) outlines the focused window, since tiled windows have no titlebar
+  highlight to show where the keyboard is pointing. AeroSpace starts it. Config:
+  `~/.config/borders/bordersrc`.
 
 ### Key AeroSpace bindings (all use `alt`)
 | Keys | Action |
@@ -249,7 +253,7 @@ mac-setup/
 │   ├── lib.sh  preflight.sh  homebrew.sh  dotfiles.sh  languages.sh  gh-dash.sh
 │   ├── git.sh  ssh.sh  vscode.sh  iterm2.sh  wm.sh  macos.sh
 │   └── touchid.sh  doctor.sh  dump.sh
-├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar,
+├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar, borders,
 │                           #   lazygit, gh-dash, bin)
 ├── iterm2/                 # DynamicProfiles/mac-setup.json (font + One Dark theme)
 └── vscode/                 # settings.json, keybindings.json, extensions.txt
@@ -265,7 +269,7 @@ mac-setup/
 # or check pieces manually:
 bash -n install.sh scripts/*.sh            # syntax
 brew bundle check --file=Brewfile          # all installed?
-stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar lazygit gh-dash bin   # dry-run symlinks
+stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar borders lazygit gh-dash bin   # dry-run symlinks
 mise current && node -v && python -V        # runtimes
 git config --get commit.gpgsign             # → true
 brew services list | grep sketchybar        # → started

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# JankyBorders: a focus indicator for AeroSpace. Focus follows the keyboard and
+# tiled windows have no titlebar highlight, so without this it is easy to type
+# into the wrong window. Only the focused window is outlined, which keeps the
+# look clear and matches SketchyBar's orange focus accent.
+options=(
+  style=round
+  width=7.0
+  hidpi=on
+  active_color=0xffff8500
+  inactive_color=0x00000000
+)
+
+borders "${options[@]}"
