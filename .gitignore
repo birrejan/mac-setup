@@ -16,3 +16,6 @@ Icon
 # Editor / tooling noise
 *.swp
 *~
+
+# Built on demand by the sketchybar capture plugin from capture_state.swift
+dotfiles/sketchybar/.config/sketchybar/bin/capture_state
