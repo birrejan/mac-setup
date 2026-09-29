@@ -17,7 +17,7 @@
 	program = /usr/bin/ssh-keygen
 [core]
 	excludesfile = ~/.gitignore_global
-	editor = code --wait
+	editor = vim
 	autocrlf = input
 	pager = delta
 [pull]
