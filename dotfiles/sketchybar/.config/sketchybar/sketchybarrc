@@ -31,6 +31,7 @@ source "$ITEM_DIR/calendar.sh"
 source "$ITEM_DIR/volume.sh"
 source "$ITEM_DIR/battery.sh"
 source "$ITEM_DIR/cpu.sh"
+source "$ITEM_DIR/memory.sh"
 source "$ITEM_DIR/controls.sh"
 
 sketchybar --update
