@@ -90,8 +90,20 @@ These configs were captured from a working machine and are reproduced **verbatim
 
 - **AeroSpace** is a tiling window manager. It starts at login, launches SketchyBar, and notifies it
   on workspace changes. Config: `~/.config/aerospace/aerospace.toml`.
-- **SketchyBar** is the custom top bar (workspaces, front app, media, clock, battery, CPU, volume).
-  It runs as a Homebrew service. Config: `~/.config/sketchybar/`.
+- **SketchyBar** is the custom top bar: workspace pills, media, calendar, volume, battery, CPU and
+  memory cards, a mic/camera indicator and a tools menu. It runs as a Homebrew service. Config:
+  `~/.config/sketchybar/`; every control is described in `CONTROLS.md`.
+  The CPU and memory cards stay hidden until the machine is busy, then turn amber/red; clicking
+  them opens `btop`. The mic/camera card only appears while either is live.
+  The tools menu (`⚙` or `alt + shift + t`) has presentation mode (hides app, media and meeting
+  titles), keep-awake, a focus timer and the audio output picker. An `MTG` pill appears 30 minutes
+  before a meeting and joins the call in one click. It is fed by a small read-only calendar helper
+  built from `native/ToolbarBridge.swift` when the bar starts.
+  On a Mac with a camera notch the bar measures it at startup (`notch.sh`) and keeps every item
+  clear of it: the media card is anchored to the right of the notch, and the memory and mic/camera
+  cards each have a twin at position `q` on the left of it. `plugins/notch_apply.sh` picks which
+  copy a display draws, and re-runs on `display_change`.
+  The controller is tested: `python3 -m unittest discover -s ~/.config/sketchybar/tests`.
 - **JankyBorders** (`borders`) outlines the focused window, since tiled windows have no titlebar
   highlight to show where the keyboard is pointing. AeroSpace starts it. Config:
   `~/.config/borders/bordersrc`.
@@ -108,6 +120,8 @@ These configs were captured from a working machine and are reproduced **verbatim
 | `alt + slash` / `alt + comma` | tiles / accordion layout |
 | `alt + r` | resize mode (then `h/j/k/l`, `enter`/`esc` to exit) |
 | `alt + shift + c` | reload AeroSpace config |
+| `alt + shift + p` | presentation mode (hide titles in the menu bar) |
+| `alt + shift + t` | menu bar tools menu |
 | `alt + tab` | previous workspace |
 
 > The `aerospace.toml` `[workspace-to-monitor-force-assignment]` block references
