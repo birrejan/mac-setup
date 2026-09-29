@@ -75,3 +75,7 @@ alias nosleep-off='sudo pmset -a disablesleep 0'
 
 # --- Machine-local overrides (not tracked) ---------------------------------
 [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
