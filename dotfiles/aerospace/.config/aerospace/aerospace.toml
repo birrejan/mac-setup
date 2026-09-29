@@ -1,6 +1,19 @@
 # Place a copy of this config to ~/.aerospace.toml
 # After that, you can edit ~/.aerospace.toml to your liking
 
+# Keep numbered workspaces available explicitly, including the fixed secondary
+# workspaces: 6 Chat, 7 Calendar, and 8 Email.
+config-version = 2
+persistent-workspaces = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+# Route app windows by their own app identity, including Chrome-installed apps.
+on-window-detected = [
+  { if = 'test %{app-bundle-id} = com.tinyspeck.slackmacgap', run = 'move-node-to-workspace 6' },
+  { if = 'test %{app-bundle-id} = com.google.Chrome.app.pommaclcbfghclhalboakcipcmmndhcj', run = 'move-node-to-workspace 6' },
+  { if = 'test %{app-bundle-id} = com.google.Chrome.app.kjbdgfilnfhdoflbpgamdcdgpehopbep', run = 'move-node-to-workspace 7' },
+  { if = 'test %{app-bundle-id} = com.google.Chrome.app.fmgjjmmmlfnkbppncabfkddbjimcfncm', run = 'move-node-to-workspace 8' },
+]
+
 # You can use it to add commands that run after login to macOS user session.
 # 'start-at-login' needs to be 'true' for 'after-login-command' to work
 # Available commands: https://nikitabobko.github.io/AeroSpace/commands
@@ -145,9 +158,9 @@ alt-2 = 'workspace 2'
 alt-3 = 'workspace 3'
 alt-4 = 'workspace 4'
 alt-5 = 'workspace 5'
-alt-6 = 'workspace 6'
-alt-7 = 'workspace 7'
-alt-8 = 'workspace 8'
+alt-6 = 'workspace 6' # Chat (Slack + Google Chat)
+alt-7 = 'workspace 7' # Calendar
+alt-8 = 'workspace 8' # Email (Gmail)
 alt-9 = 'workspace 9'
 alt-0 = 'workspace 0'
 
@@ -208,9 +221,8 @@ esc = 'mode main'
 3 = 'main'
 4 = 'main'
 5 = 'main'
-6 = 'Built-in Retina Display'
-7 = 'Built-in Retina Display'
-8 = 'Built-in Retina Display'
+6 = ['secondary', 'main'] # Chat
+7 = ['secondary', 'main'] # Calendar
+8 = ['secondary', 'main'] # Email
 9 = 'Built-in Retina Display'
 0 = 'Built-in Retina Display'
-
