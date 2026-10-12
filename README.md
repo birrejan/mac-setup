@@ -91,19 +91,20 @@ These configs were captured from a working machine and are reproduced **verbatim
 
 - **AeroSpace** is a tiling window manager. It starts at login, launches SketchyBar, and notifies it
   on workspace changes. Config: `~/.config/aerospace/aerospace.toml`.
-- **SketchyBar** is the custom top bar: workspace pills, media, calendar, volume, battery, CPU and
-  memory cards, a mic/camera indicator and a tools menu. It runs as a Homebrew service. Config:
-  `~/.config/sketchybar/`; every control is described in `CONTROLS.md`.
-  The CPU and memory cards stay hidden until the machine is busy, then turn amber/red; clicking
-  them opens `btop`. The mic/camera card only appears while either is live.
+- **SketchyBar** is the custom top bar: workspace pills, media, calendar, volume, battery, CPU,
+  memory, disk and network cards, a mic/camera indicator and a tools menu. It runs as a Homebrew
+  service. Config: `~/.config/sketchybar/`; every control is described in `CONTROLS.md`.
+  The CPU and memory cards stay hidden until the machine is busy, then turn amber/red; clicking them
+  opens `btop`. The disk card appears once the drive is 85% full (red from 93%) and the network card
+  only while the Mac is offline. The mic/camera card only appears while either is live.
   The tools menu (`⚙` or `alt + shift + t`) has presentation mode (hides app, media and meeting
   titles), keep-awake, a focus timer and the audio output picker. An `MTG` pill appears 30 minutes
   before a meeting and joins the call in one click. It is fed by a small read-only calendar helper
   built from `native/ToolbarBridge.swift` when the bar starts.
   On a Mac with a camera notch the bar measures it at startup (`notch.sh`) and keeps every item
-  clear of it: the media card is anchored to the right of the notch, and the memory and mic/camera
-  cards each have a twin at position `q` on the left of it. `plugins/notch_apply.sh` picks which
-  copy a display draws, and re-runs on `display_change`.
+  clear of it: the media card is anchored to the right of the notch, and the memory, disk, network
+  and mic/camera cards each have a twin at position `q` on the left of it. `plugins/notch_apply.sh`
+  picks which copy a display draws, and re-runs on `display_change`.
   The controller is tested: `python3 -m unittest discover -s ~/.config/sketchybar/tests`.
 - **JankyBorders** (`borders`) outlines the focused window, since tiled windows have no titlebar
   highlight to show where the keyboard is pointing. AeroSpace starts it. Config:
