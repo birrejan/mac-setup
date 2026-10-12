@@ -158,7 +158,7 @@ Keys on a PR in gh-dash (`~/.config/gh-dash/config.yml`):
 |-----|--------|
 | `i` | review in lazygit: the whole PR shows as staged changes in a throwaway worktree |
 | `f` | submit your review (approve / request changes / comment) |
-| `I` | Claude reviews first; its findings land in your pending review |
+| `I` | Claude reviews first; its findings land in your pending review. The menu bar's **REVIEW** pill shows its progress, then the comment count (see `CONTROLS.md`) |
 | `T` | jump to the Claude task session working on the PR |
 | `W` | toggle draft / ready for review |
 | `R` | rebase the PR on its base branch, in the background |
