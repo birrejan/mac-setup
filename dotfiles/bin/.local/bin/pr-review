@@ -205,6 +205,11 @@ ai() {
   local name
   name="$(basename "$repo")-$pr-ai"
   if [[ -z ${PR_REVIEW_AI_WORKER:-} ]]; then
+    # Checked here too, so a second press says so in gh-dash and leaves the
+    # running review's log alone instead of truncating it.
+    if kill -0 "$(cat "$cache/$name.lock/pid" 2>/dev/null)" 2>/dev/null; then
+      die "Claude is already reviewing #$pr; the REVIEW item in the menu bar shows how far it is."
+    fi
     mkdir -p "$cache"
     PR_REVIEW_AI_WORKER=1 nohup "$0" ai "$@" >"$cache/$name.log" 2>&1 </dev/null &
     echo "Claude is reviewing #$pr; its findings will land in your pending review."
