@@ -146,6 +146,7 @@ merged in, each also on its own branch of the fork so it can go upstream:
 | `fix/keybinding-merge-keeps-non-strings` | non-string keybinding fields (like `background`) survive the config merge |
 | `fix/watch-checks-final-state` | `w`'s notification reports the checks' real final state |
 | `fix/ignore-app-check-suites-that-never-start` | apps that never report a check (Supabase, Claude) no longer show as "in progress" |
+| `feat/behind-indicator` | a column flags PRs whose branch is behind their base, and the preview says it is out-of-date |
 
 `scripts/gh-dash.sh` clones the fork to `~/.local/src/gh-dash`, builds it and installs it as the
 `gh dash` extension. It never touches an existing checkout. To update:
