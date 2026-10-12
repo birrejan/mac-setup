@@ -67,7 +67,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 |----------|------|
 | Terminal / editor | iTerm2, VS Code |
 | Window manager / menu bar | **AeroSpace** (tiling), **SketchyBar** (menu bar), Rectangle, Ice |
-| Launchers / AI | Raycast, Alfred 5, Superwhisper, Claude |
+| Launchers / AI | Alfred 5, Superwhisper, Claude |
 | Comms | Slack, Zoom |
 | Browsers | Google Chrome, Firefox |
 | Security / accounts | Proton Pass, Proton Mail, Proton VPN, Proton Drive, Yubico Authenticator |
@@ -241,7 +241,7 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
 1. Restart the terminal (`exec zsh`) and restart iTerm2 to load the new config + One Dark profile.
 2. Add the SSH key to GitHub (authentication + signing).
 3. **Grant Accessibility permissions** (System Settings → Privacy & Security → Accessibility):
-   AeroSpace, Rectangle, Raycast, Alfred. *(Cannot be scripted — macOS security.)*
+   AeroSpace, Rectangle, Alfred. *(Cannot be scripted — macOS security.)*
 4. Sign in to apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
 5. Run the healthcheck: `./install.sh --only doctor` (everything should be green).
 
@@ -249,8 +249,8 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
 
 ## Notes / overlaps
 
-- **AeroSpace + Rectangle** and **Alfred 5 + Raycast** are both installed by request, but overlap
-  (tiling vs snapping; two launchers). Drop either by removing its `cask` line from the `Brewfile`.
+- **AeroSpace + Rectangle** are both installed by request, but overlap (tiling vs snapping). Drop
+  either by removing its `cask` line from the `Brewfile`.
 - No Mac App Store apps (avoids interactive sign-in). Add `mas` + `mas "App", id: …` if you want them.
 - iTerm2 preferences are a manual step; full automation can be added later via `PrefsCustomFolder`.
 

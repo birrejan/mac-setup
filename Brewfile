@@ -57,8 +57,7 @@ cask "rectangle"                  # simple window snapping (overlaps AeroSpace â
 cask "jordanbaird-ice"            # menu bar item manager (replaces unmaintained Dozer)
 
 # Launchers / productivity
-cask "raycast"
-cask "alfred"                     # Alfred 5 (overlaps Raycast â€” see README)
+cask "alfred"                     # Alfred 5 launcher
 cask "superwhisper"               # AI dictation
 cask "claude"                     # Claude desktop app
 

@@ -52,7 +52,7 @@ check "sketchybar running"   bash -c "brew services list 2>/dev/null | grep -Eq 
 
 log "Apps"
 shopt -s nullglob nocaseglob
-for app in "iTerm" "Visual Studio Code" "Raycast" "Alfred" "Claude" "Superwhisper" "Yubico Authenticator" "Slack"; do
+for app in "iTerm" "Visual Studio Code" "Alfred" "Claude" "Superwhisper" "Yubico Authenticator" "Slack"; do
   matches=(/Applications/"${app}"*.app)
   if (( ${#matches[@]} )); then pass "$app"; else fail "$app (missing)"; fi
 done
