@@ -47,6 +47,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 |------|---------|
 | `git`, `gh` | Git + GitHub CLI |
 | `lazygit`, `git-delta` | terminal UI for git; syntax-highlighted diffs in git, lazygit and gh-dash |
+| `difftastic` | syntax-aware diffs that ignore re-indentation and reflowing; one of lazygit's diff views |
 | `gh dash` | PR dashboard, built from the [birrejan/gh-dash](https://github.com/birrejan/gh-dash) fork with `go` (see [PR review](#pr-review-in-the-terminal-gh-dash--lazygit)) |
 | `stow` | symlinks the dotfiles into `$HOME` |
 | `starship` | shell prompt |
@@ -162,7 +163,7 @@ Keys on a PR in gh-dash (`~/.config/gh-dash/config.yml`):
 
 Inside a review in lazygit (Files panel, `~/.config/lazygit/pr-review.yml`): `c` comments on a
 line, `C` lists your pending comments, `S` submits the review. Comments stay pending, visible only
-to you, until you submit. `|` cycles delta, side-by-side and plain diffs.
+to you, until you submit. `|` cycles delta, side-by-side, difftastic and plain diffs.
 
 The review commands live in `~/.local/bin/pr-review`. `I` and `T` also need the Claude Code
 orchestrator in `~/Projects/.orchestrator` and its `second-review` skill; without them the

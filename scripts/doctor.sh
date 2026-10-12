@@ -13,7 +13,7 @@ log "Doctor — verifying setup"
 load_brew
 
 log "CLI tools"
-for c in brew git gh lazygit delta go stow starship mise uv fzf rg fd bat eza zoxide jq code; do
+for c in brew git gh lazygit delta difft go stow starship mise uv fzf rg fd bat eza zoxide jq code; do
   if has "$c"; then pass "$c"; else fail "$c (missing)"; fi
 done
 

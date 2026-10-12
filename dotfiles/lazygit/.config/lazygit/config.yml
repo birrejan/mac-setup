@@ -5,5 +5,10 @@ git:
       name: delta
     - command: delta --paging=never --line-numbers --side-by-side
       name: delta side-by-side
+    # Compares syntax trees rather than lines, so re-indented or reflowed code
+    # shows only what actually changed.
+    - type: extDiff
+      command: difft --color=always --context={{diffContext}}
+      name: difftastic
     - type: rawGit
       name: plain git
