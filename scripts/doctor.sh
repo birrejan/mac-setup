@@ -21,13 +21,17 @@ log "Runtimes"
 check "node available"   bash -c 'mise which node   2>/dev/null || command -v node'
 check "python available" bash -c 'mise which python 2>/dev/null || command -v python3'
 
-log "Dotfiles (should be symlinks)"
+log "Dotfiles (should resolve into the repo)"
+# Stow links a whole directory when it can (e.g. ~/.config/sketchybar), so a
+# file is managed if its resolved path is inside dotfiles/, whichever part of
+# the path is the symlink.
+dotfiles_dir="$(realpath "$REPO_ROOT/dotfiles")"
 for f in .zshrc .zshenv .gitconfig .gitignore_global \
          .config/starship.toml .config/mise/config.toml \
          .config/aerospace/aerospace.toml .config/sketchybar/sketchybarrc \
          .config/lazygit/config.yml .config/gh-dash/config.yml .local/bin/pr-review; do
-  if [[ -L "$HOME/$f" ]]; then pass "$f"
-  elif [[ -e "$HOME/$f" ]]; then fail "$f (exists but not a symlink)"
+  if [[ "$(realpath "$HOME/$f" 2>/dev/null)" == "$dotfiles_dir"/* ]]; then pass "$f"
+  elif [[ -e "$HOME/$f" ]]; then fail "$f (exists but isn't linked into the repo)"
   else fail "$f (missing)"; fi
 done
 
