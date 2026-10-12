@@ -7,6 +7,12 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$LIB_DIR/.." && pwd)"
 export REPO_ROOT
 
+# The same defaults as dotfiles/zsh/.zshenv. Setup runs before that file is
+# linked, and tools that read these, like Homebrew's tap trust list, must
+# write where later shells will look.
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
 # --- Pretty logging --------------------------------------------------------
 if [[ -t 1 ]]; then
   C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'; C_RED=$'\033[31m'; C_GREEN=$'\033[32m'
