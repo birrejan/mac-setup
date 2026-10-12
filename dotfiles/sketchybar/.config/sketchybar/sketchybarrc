@@ -34,6 +34,7 @@ source "$ITEM_DIR/cpu.sh"
 source "$ITEM_DIR/memory.sh"
 source "$ITEM_DIR/capture.sh"
 source "$ITEM_DIR/controls.sh"
+source "$ITEM_DIR/pr_review.sh"
 
 # Place the conditional RAM and capture indicators safely around camera notches.
 source "$ITEM_DIR/notch.sh"

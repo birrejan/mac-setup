@@ -334,7 +334,7 @@ post_findings() {
   if ((posted + unposted == 0)); then
     notify "Claude found nothing on #$pr" "$summary"
   elif ((unposted == 0)); then
-    notify "Claude left $posted comments on #$pr" "They're in your pending review: press i on the PR, then C to list them."
+    notify "Claude left $posted comments on #$pr" "They're in your pending review. Click REVIEW in the menu bar to see them on GitHub, or press i on the PR, then C."
   else
     notify "Claude left $posted comments on #$pr" "$unposted more couldn't be posted; they're in $log"
   fi
