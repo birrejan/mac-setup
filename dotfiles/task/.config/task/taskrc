@@ -13,7 +13,9 @@ search.case.sensitive=no
 
 # --- Links ---------------------------------------------------------------
 # jira:NOVA-1043 and pr:InSpace-GEO/inspace-app#882 tie a task to its ticket and
-# its PR. `task-open <id>` opens both, plus any URL in the annotations.
+# its PR. `task-open <id>` opens both, plus any URL in the annotations. The `+`
+# key in gh-dash adds a review task with pr (and jira, when the branch or title
+# names a ticket) already set.
 uda.jira.type=string
 uda.jira.label=Jira
 uda.pr.type=string

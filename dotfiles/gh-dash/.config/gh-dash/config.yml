@@ -107,6 +107,10 @@ keybindings:
           name: jump to the task session behind this PR
           background: true
           command: ~/Projects/.orchestrator/bin/pr-task.sh {{.RepoName}} {{.PrNumber}}
+        - key: "+"
+          name: add a Taskwarrior task to review this PR
+          background: true
+          command: task-review {{.RepoName}} {{.PrNumber}}
 repoPaths:
     InSpace-GEO/*: ~/Projects/*
 theme:

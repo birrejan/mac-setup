@@ -30,7 +30,7 @@ for f in .zshrc .zshenv .gitconfig .gitignore_global \
          .config/starship.toml .config/mise/config.toml \
          .config/aerospace/aerospace.toml .config/sketchybar/sketchybarrc \
          .config/lazygit/config.yml .config/gh-dash/config.yml .config/task/taskrc \
-         .local/bin/pr-review .local/bin/task-open; do
+         .local/bin/pr-review .local/bin/task-review .local/bin/task-open; do
   if [[ "$(realpath "$HOME/$f" 2>/dev/null)" == "$dotfiles_dir"/* ]]; then pass "$f"
   elif [[ -e "$HOME/$f" ]]; then fail "$f (exists but isn't linked into the repo)"
   else fail "$f (missing)"; fi

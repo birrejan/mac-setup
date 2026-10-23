@@ -78,7 +78,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 `~/.zshrc`, `~/.zshenv`, `~/.gitconfig`, `~/.gitignore_global`, `~/.config/starship.toml`,
 `~/.config/mise/config.toml`, `~/.config/aerospace/aerospace.toml`, `~/.config/sketchybar/*`,
 `~/.config/lazygit/*`, `~/.config/gh-dash/config.yml`, `~/.config/task/*`, `~/.local/bin/pr-review`,
-`~/.local/bin/task-open`.
+`~/.local/bin/task-review`, `~/.local/bin/task-open`.
 
 ### macOS defaults (`scripts/macos.sh`)
 Fast key repeat, no press-and-hold, tap-to-click, dark mode, Finder (show extensions / path bar /
@@ -162,6 +162,7 @@ Keys on a PR in gh-dash (`~/.config/gh-dash/config.yml`):
 | `f` | submit your review (approve / request changes / comment) |
 | `I` | Claude reviews first; its findings land in your pending review. The menu bar's **REVIEW** pill shows its progress, then the comment count (see `CONTROLS.md`) |
 | `T` | jump to the Claude task session working on the PR |
+| `+` | add a Taskwarrior task to review the PR (see [Tasks](#tasks-taskwarrior)) |
 | `W` | toggle draft / ready for review |
 | `R` | rebase the PR on its base branch, in the background |
 
@@ -198,6 +199,10 @@ themselves live in `~/.local/share/task`, outside the repo.
 - **Links.** Two fields tie a task to the work behind it: `jira:NOVA-1043` and
   `pr:InSpace-GEO/inspace-app#882`. The reports show the Jira key; `task-open <id>`, or `1` on a task
   in taskwarrior-tui, opens the ticket, the PR and any URL in the annotations.
+- **Reviews from gh-dash.** `+` on a PR adds "Review inspace-app#882: <title>" tagged `+review`, with
+  `pr` set and `jira` taken from the branch or title when either names a ticket. A notification
+  names the task, and a PR that already has a pending task isn't added twice. `+review` adds 4 to a
+  task's urgency, since a waiting review blocks a teammate.
 
 > `due:today` means midnight, so the task counts as overdue all day. Use `due:eod`, or a time such
 > as `due:17:00`.
