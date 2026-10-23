@@ -37,6 +37,7 @@ source "$ITEM_DIR/network.sh"
 source "$ITEM_DIR/capture.sh"
 source "$ITEM_DIR/controls.sh"
 source "$ITEM_DIR/pr_review.sh"
+source "$ITEM_DIR/tasks.sh"
 
 # Place the conditional RAM, disk, network and capture indicators safely around
 # camera notches.

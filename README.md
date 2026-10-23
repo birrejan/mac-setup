@@ -54,7 +54,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 | `mise` | runtime version manager (Node, Python) |
 | `uv`, `pipx` | Python package / app managers |
 | `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `jq`, `btop` | modern CLI workflow |
-| `task`, `tasksh`, `taskwarrior-tui` | Taskwarrior to-do list in the terminal (see [Tasks](#tasks-taskwarrior)) |
+| `task`, `tasksh`, `taskwarrior-tui` | Taskwarrior to-do list, in the terminal and the menu bar (see [Tasks](#tasks-taskwarrior)) |
 | `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions` | zsh plugins (no framework) |
 | `sketchybar` | the custom menu bar |
 | `borders` | outlines the focused window (JankyBorders) |
@@ -98,7 +98,8 @@ These configs were captured from a working machine and are reproduced **verbatim
   service. Config: `~/.config/sketchybar/`; every control is described in `CONTROLS.md`.
   The CPU and memory cards stay hidden until the machine is busy, then turn amber/red; clicking them
   opens `btop`. The disk card appears once the drive is 85% full (red from 93%) and the network card
-  only while the Mac is offline. The mic/camera card only appears while either is live.
+  only while the Mac is offline. The mic/camera card only appears while either is live. The **TASK**
+  pill shows the Taskwarrior task you started, or what is due today (see [Tasks](#tasks-taskwarrior)).
   The tools menu (`⚙` or `alt + shift + t`) has presentation mode (hides app, media and meeting
   titles), keep-awake, a focus timer and the audio output picker. An `MTG` pill appears 30 minutes
   before a meeting and joins the call in one click. It is fed by a small read-only calendar helper
@@ -178,8 +179,8 @@ dashboard shows an error in its footer.
 
 ## Tasks (Taskwarrior)
 
-[Taskwarrior](https://taskwarrior.org) 3 keeps the to-do list, with a look that matches the rest of
-the setup. The config is the `task` Stow package (`~/.config/task/`) and the tasks
+[Taskwarrior](https://taskwarrior.org) 3 keeps the to-do list, with a look and a menu bar pill that
+match the rest of the setup. The config is the `task` Stow package (`~/.config/task/`) and the tasks
 themselves live in `~/.local/share/task`, outside the repo.
 
 | Command | Action |
@@ -187,7 +188,7 @@ themselves live in `~/.local/share/task`, outside the repo.
 | `t` | the `next` report: pending tasks, most urgent first |
 | `tt` | `task today`: what is started, overdue, or due or scheduled today |
 | `ta Release the DS due:eod +ds` | add a task |
-| `t 3 start` / `t 3 stop` | say what you're working on |
+| `t 3 start` / `t 3 stop` | say what you're working on; the menu bar shows it and for how long |
 | `td 3` | mark task 3 done |
 | `tui` | taskwarrior-tui, to browse, filter and edit from the keyboard (`?` lists its keys) |
 | `task-open 3` | open task 3's Jira ticket, PR and any link in its annotations |
@@ -203,6 +204,10 @@ themselves live in `~/.local/share/task`, outside the repo.
   `pr` set and `jira` taken from the branch or title when either names a ticket. A notification
   names the task, and a PR that already has a pending task isn't added twice. `+review` adds 4 to a
   task's urgency, since a waiting review blocks a teammate.
+- **Menu bar.** The **TASK** pill shows the started task and for how long; with nothing started, the
+  overdue count in red, or else the next task due today. It is hidden when none of those apply, and
+  turns amber when something falls due within the hour. A Taskwarrior hook
+  (`hooks/on-exit.sketchybar`) redraws it the moment a task changes. Click it for taskwarrior-tui.
 
 > `due:today` means midnight, so the task counts as overdue all day. Use `due:eod`, or a time such
 > as `due:17:00`.
