@@ -35,6 +35,11 @@ brew "wget"
 brew "tree"
 brew "btop"                   # resource monitor
 
+# Tasks (config under dotfiles/task)
+brew "task"                   # Taskwarrior
+brew "tasksh"                 # Taskwarrior shell, for the weekly `review`
+brew "taskwarrior-tui"        # terminal UI for Taskwarrior
+
 # zsh plugins (sourced from .zshrc — no framework needed)
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"

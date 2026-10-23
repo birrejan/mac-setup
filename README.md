@@ -54,6 +54,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 | `mise` | runtime version manager (Node, Python) |
 | `uv`, `pipx` | Python package / app managers |
 | `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `jq`, `btop` | modern CLI workflow |
+| `task`, `tasksh`, `taskwarrior-tui` | Taskwarrior to-do list in the terminal (see [Tasks](#tasks-taskwarrior)) |
 | `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions` | zsh plugins (no framework) |
 | `sketchybar` | the custom menu bar |
 | `borders` | outlines the focused window (JankyBorders) |
@@ -76,7 +77,8 @@ Steps (run in this order, each also runnable via `--only <name>`):
 ### Dotfiles (symlinked by Stow)
 `~/.zshrc`, `~/.zshenv`, `~/.gitconfig`, `~/.gitignore_global`, `~/.config/starship.toml`,
 `~/.config/mise/config.toml`, `~/.config/aerospace/aerospace.toml`, `~/.config/sketchybar/*`,
-`~/.config/lazygit/*`, `~/.config/gh-dash/config.yml`, `~/.local/bin/pr-review`.
+`~/.config/lazygit/*`, `~/.config/gh-dash/config.yml`, `~/.config/task/*`, `~/.local/bin/pr-review`,
+`~/.local/bin/task-open`.
 
 ### macOS defaults (`scripts/macos.sh`)
 Fast key repeat, no press-and-hold, tap-to-click, dark mode, Finder (show extensions / path bar /
@@ -170,6 +172,35 @@ to you, until you submit. `|` cycles delta, side-by-side, difftastic and plain d
 The review commands live in `~/.local/bin/pr-review`. `I` and `T` also need the Claude Code
 orchestrator in `~/Projects/.orchestrator` and its `second-review` skill; without them the
 dashboard shows an error in its footer.
+
+---
+
+## Tasks (Taskwarrior)
+
+[Taskwarrior](https://taskwarrior.org) 3 keeps the to-do list, with a look that matches the rest of
+the setup. The config is the `task` Stow package (`~/.config/task/`) and the tasks
+themselves live in `~/.local/share/task`, outside the repo.
+
+| Command | Action |
+|---------|--------|
+| `t` | the `next` report: pending tasks, most urgent first |
+| `tt` | `task today`: what is started, overdue, or due or scheduled today |
+| `ta Release the DS due:eod +ds` | add a task |
+| `t 3 start` / `t 3 stop` | say what you're working on |
+| `td 3` | mark task 3 done |
+| `tui` | taskwarrior-tui, to browse, filter and edit from the keyboard (`?` lists its keys) |
+| `task-open 3` | open task 3's Jira ticket, PR and any link in its annotations |
+| `tasksh`, then `review` | weekly pass over the tasks you haven't looked at in a week |
+
+- **Colors.** `graphite.theme` maps the SketchyBar palette onto Taskwarrior's 256 colors: the started
+  task in bold orange, due today in orange, due this week in amber, overdue in red, muted headers and
+  striped rows. taskwarrior-tui picks up the same colors.
+- **Links.** Two fields tie a task to the work behind it: `jira:NOVA-1043` and
+  `pr:InSpace-GEO/inspace-app#882`. The reports show the Jira key; `task-open <id>`, or `1` on a task
+  in taskwarrior-tui, opens the ticket, the PR and any URL in the annotations.
+
+> `due:today` means midnight, so the task counts as overdue all day. Use `due:eod`, or a time such
+> as `due:17:00`.
 
 ---
 
@@ -271,7 +302,7 @@ mac-setup/
 │   ├── git.sh  ssh.sh  vscode.sh  iterm2.sh  wm.sh  macos.sh
 │   └── touchid.sh  doctor.sh  dump.sh
 ├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar, borders,
-│                           #   lazygit, gh-dash, bin)
+│                           #   lazygit, gh-dash, task, bin)
 ├── iterm2/                 # DynamicProfiles/mac-setup.json (font + One Dark theme)
 └── vscode/                 # settings.json, keybindings.json, extensions.txt
 ```
@@ -286,7 +317,7 @@ mac-setup/
 # or check pieces manually:
 bash -n install.sh scripts/*.sh            # syntax
 brew bundle check --file=Brewfile          # all installed?
-stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar borders lazygit gh-dash bin   # dry-run symlinks
+stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar borders lazygit gh-dash task bin   # dry-run symlinks
 mise current && node -v && python -V        # runtimes
 git config --get commit.gpgsign             # → true
 brew services list | grep sketchybar        # → started

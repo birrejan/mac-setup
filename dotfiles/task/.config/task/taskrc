@@ -1,0 +1,58 @@
+# ~/.config/task/taskrc — managed by mac-setup (symlinked from the repo via GNU Stow).
+# Taskwarrior reads it because there is no ~/.taskrc. `task show` lists every
+# setting with its default; `task diagnostics` shows the files actually in use.
+
+data.location=~/.local/share/task
+news.version=3.5.0
+
+# Colors from the SketchyBar palette (see graphite.theme).
+include graphite.theme
+
+weekstart=monday
+search.case.sensitive=no
+
+# --- Links ---------------------------------------------------------------
+# jira:NOVA-1043 and pr:InSpace-GEO/inspace-app#882 tie a task to its ticket and
+# its PR. `task-open <id>` opens both, plus any URL in the annotations.
+uda.jira.type=string
+uda.jira.label=Jira
+uda.pr.type=string
+uda.pr.label=PR
+
+# --- Urgency -------------------------------------------------------------
+# A pending review blocks a teammate, so it outranks other work of the same age.
+urgency.user.tag.review.coefficient=4.0
+
+# --- Reports -------------------------------------------------------------
+# `task` alone runs next. Same columns as stock, minus the urgency score (it is
+# the sort order already) and with the Jira key; description.count folds the
+# annotations into a [n] count. Empty columns are hidden anyway.
+report.next.columns=id,start.age,entry.age,depends,priority,project,tags,jira,recur,scheduled.countdown,due.relative,until.remaining,description.count
+report.next.labels=ID,Active,Age,Deps,P,Project,Tag,Jira,Recur,S,Due,Until,Description
+
+# `task today`: what needs you today, the started task first.
+report.today.description=Started, overdue, or due or scheduled today
+report.today.columns=id,start.age,priority,project,tags,jira,due.relative,description.count
+report.today.labels=ID,Active,P,Project,Tag,Jira,Due,Description
+report.today.filter=+PENDING -WAITING ( +ACTIVE or due.before:tomorrow or scheduled.before:tomorrow )
+report.today.sort=start-,due+,urgency-
+
+# --- tasksh review -------------------------------------------------------
+# `tasksh`, then `review`, walks through tasks not looked at in a week.
+uda.reviewed.type=date
+uda.reviewed.label=Reviewed
+report._reviewed.description=Tasksh review report.  Adjust the filter to your needs.
+report._reviewed.columns=uuid
+report._reviewed.sort=reviewed+,modified+
+report._reviewed.filter=( reviewed.none: or reviewed.before:now-6days ) and ( +PENDING or +WAITING )
+
+# --- taskwarrior-tui -----------------------------------------------------
+# `tui`. 1 opens the selected task's links, like task-open.
+uda.taskwarrior-tui.selection.indicator=›
+uda.taskwarrior-tui.selection.bold=yes
+uda.taskwarrior-tui.task-report.prompt-on-done=true
+uda.taskwarrior-tui.task-report.prompt-on-delete=true
+uda.taskwarrior-tui.style.context.active=black on rgb531
+uda.taskwarrior-tui.style.calendar.title=black on rgb531
+uda.taskwarrior-tui.style.report-menu.active=black on rgb531
+uda.taskwarrior-tui.shortcuts.1=~/.local/bin/task-open

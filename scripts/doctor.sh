@@ -13,7 +13,7 @@ log "Doctor — verifying setup"
 load_brew
 
 log "CLI tools"
-for c in brew git gh lazygit delta difft go stow starship mise uv fzf rg fd bat eza zoxide jq code; do
+for c in brew git gh lazygit delta difft go stow starship mise uv fzf rg fd bat eza zoxide jq task taskwarrior-tui code; do
   if has "$c"; then pass "$c"; else fail "$c (missing)"; fi
 done
 
@@ -29,7 +29,8 @@ dotfiles_dir="$(realpath "$REPO_ROOT/dotfiles")"
 for f in .zshrc .zshenv .gitconfig .gitignore_global \
          .config/starship.toml .config/mise/config.toml \
          .config/aerospace/aerospace.toml .config/sketchybar/sketchybarrc \
-         .config/lazygit/config.yml .config/gh-dash/config.yml .local/bin/pr-review; do
+         .config/lazygit/config.yml .config/gh-dash/config.yml .config/task/taskrc \
+         .local/bin/pr-review .local/bin/task-open; do
   if [[ "$(realpath "$HOME/$f" 2>/dev/null)" == "$dotfiles_dir"/* ]]; then pass "$f"
   elif [[ -e "$HOME/$f" ]]; then fail "$f (exists but isn't linked into the repo)"
   else fail "$f (missing)"; fi

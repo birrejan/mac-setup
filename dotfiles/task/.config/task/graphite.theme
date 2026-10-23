@@ -1,0 +1,69 @@
+# Taskwarrior colors from the SketchyBar palette (sketchybar/colors.sh): cool
+# neutral text with one orange accent, amber for soon and red for late. Taskwarrior
+# only knows the 256-color palette, so each is the nearest of those:
+#
+#   accent  ff9d4d → rgb531    warn  e6b46a → rgb431    crit  f77986 → rgb522
+#   muted   8b9bb1 → rgb223    dim   5b6c83 → gray9
+#
+# Ordinary rows keep the terminal's own foreground. Which rule wins when several
+# match is rule.precedence.color, left to right.
+
+rule.precedence.color=deleted,completed,active,keyword.,tag.,project.,overdue,scheduled,due.today,due,blocked,blocking,recurring,tagged,uda.
+rule.color.merge=1
+
+# General
+color.label=rgb223
+color.label.sort=rgb223
+color.alternate=on gray4
+color.header=rgb223
+color.footnote=rgb223
+color.warning=rgb431
+color.error=rgb522
+color.debug=gray9
+
+# Task states
+color.active=bold rgb531
+color.due.today=rgb531
+color.due=rgb431
+color.overdue=bold rgb522
+color.blocked=gray9
+color.blocking=bold
+color.completed=gray9
+color.deleted=gray9
+color.recurring=
+color.scheduled=
+color.until=
+color.tagged=
+color.tag.next=bold
+color.tag.none=
+color.project.none=
+color.uda.priority.H=bold
+color.uda.priority.M=
+color.uda.priority.L=rgb223
+
+# Calendar
+color.calendar.today=bold black on rgb531
+color.calendar.due.today=black on rgb531
+color.calendar.due=black on rgb431
+color.calendar.overdue=black on rgb522
+color.calendar.scheduled=rgb223
+color.calendar.holiday=black on rgb223
+color.calendar.weekend=gray9
+color.calendar.weeknumber=gray9
+
+# History, burndown and summary charts
+color.history.add=black on rgb223
+color.history.done=black on rgb531
+color.history.delete=black on gray9
+color.burndown.pending=on rgb223
+color.burndown.started=on rgb431
+color.burndown.done=on rgb531
+color.summary.bar=black on rgb531
+color.summary.background=on gray4
+
+# Sync and undo
+color.sync.added=rgb531
+color.sync.changed=rgb431
+color.sync.rejected=rgb522
+color.undo.before=rgb522
+color.undo.after=rgb531
