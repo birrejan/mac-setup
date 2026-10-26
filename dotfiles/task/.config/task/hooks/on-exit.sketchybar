@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Taskwarrior passes the tasks a command added or changed on stdin, one JSON
+# object per line, and nothing for reports. After a change, the menu bar's TASK
+# pill (sketchybar/plugins/tasks.sh) redraws at once instead of on its timer.
+# Anything printed here would show after every task command, so it stays quiet.
+if [ -n "$(cat)" ]; then
+  sketchybar --trigger task_change >/dev/null 2>&1 || true
+fi
+exit 0

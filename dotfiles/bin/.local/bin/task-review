@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# task-review <owner/name> <pr-number>
+#
+# Adds "Review name#123: <PR title>" to Taskwarrior, tagged +review, with pr set
+# to owner/name#123 and jira set when the branch or title names a ticket. gh-dash
+# runs it on the PR under the cursor with +. A PR that already has a pending task
+# isn't added twice. Either way a macOS notification says which task it is.
+set -euo pipefail
+
+die() { echo "task-review: $*" >&2; exit 1; }
+
+notify() {
+  osascript - "$1" "$2" >/dev/null 2>&1 <<'APPLESCRIPT' || true
+on run argv
+  display notification (item 2 of argv) with title (item 1 of argv)
+end run
+APPLESCRIPT
+}
+
+(($# == 2)) || die "usage: task-review <owner/name> <pr-number>"
+repo=$1 pr=$2
+link="$repo#$pr"
+
+existing=$(task rc.verbose=nothing rc.hooks=0 +PENDING export |
+  jq -r --arg pr "$link" 'map(select(.pr == $pr)) | first | select(.) | "\(.id)\t\(.description)"')
+if [[ -n "$existing" ]]; then
+  notify "Already task ${existing%%$'\t'*}" "${existing#*$'\t'}"
+  exit 0
+fi
+
+IFS=$'\t' read -r title branch < <(
+  gh pr view "$pr" --repo "$repo" --json title,headRefName --jq '[.title, .headRefName] | @tsv') ||
+  die "couldn't read $link from GitHub"
+
+# The branch is the likelier place for the ticket key; feature/NOVA-1043-foo.
+jira=$(grep -oE '\b[A-Z][A-Z0-9]+-[0-9]+\b' <<<"$branch"$'\n'"$title" | head -1 || true)
+
+# -- ends the modifications, so nothing in the title is read as one (due:, +tag).
+description="Review ${repo#*/}#$pr: $title"
+added=$(task rc.verbose=new-id add +review "pr:$link" ${jira:+"jira:$jira"} -- "$description")
+notify "${added%.}" "$description"

@@ -11,14 +11,15 @@
 #   display=     is for the right-hand cards, which the bar does *not* keep clear
 #                of the notch -- they stack leftwards from the right edge and slide
 #                under it. Leave room for the battery and CPU to appear together
-#                by keeping RAM and capture status on the other side of the notch.
+#                by keeping RAM, disk, network and capture status on the other side
+#                of the notch.
 #                Each has a `.notch` twin at position q
 #                (see items/memory.sh); this decides which copy a display draws.
 #
 # Only display= is touched here, never drawing= -- the capture card owns its own
 # drawing flag. display=0 matches no display, which is how a copy is parked.
 
-CARDS_THAT_DO_NOT_FIT=(memory capture)
+CARDS_THAT_DO_NOT_FIT=(memory disk network capture)
 
 IFS='|' read -r NOTCH_WIDTH DISPLAYS_WITHOUT_NOTCH DISPLAYS_WITH_NOTCH <<< "$("$CONFIG_DIR/notch.sh")"
 

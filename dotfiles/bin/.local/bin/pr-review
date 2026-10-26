@@ -20,9 +20,14 @@
 # the second-review skill on the PR in the background and adds each finding to
 # your pending review, then sends a macOS notification. Nothing is visible to
 # anyone else until you submit, so you can edit or drop what it wrote first.
+# While it works, it keeps <cache>/<repo>-<pr>-ai.json up to date for the SketchyBar
+# REVIEW item: Claude's latest step, then how many comments it left. The item stays
+# until you click it or submit the review through `pr-review submit`.
 set -euo pipefail
 
 die() { echo "pr-review: $*" >&2; exit 1; }
+
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/pr-review"
 
 # Prints "<pr node id>\t<your pending review id, or empty>".
 lookup() {
@@ -118,6 +123,19 @@ submit() {
         addPullRequestReview(input: {pullRequestId: $pr, event: $event, body: $body}) { pullRequestReview { url } }
       }' --jq .data.addPullRequestReview.pullRequestReview.url
   fi
+  clear_status
+}
+
+# Drops the REVIEW item of a Claude review of this PR that has ended, now that its
+# comments are submitted. One still running keeps its item.
+clear_status() {
+  local file
+  for file in "$cache"/*-"$PR_REVIEW_PR"-ai.json; do
+    if [[ -f $file ]] && jq -e --arg nwo "$PR_REVIEW_REPO" \
+      '.nwo == $nwo and (.state == "done" or .state == "failed")' "$file" >/dev/null; then
+      rm -f "$file"
+    fi
+  done
 }
 
 # set_pr <repo-path> <pr-number> [<base-branch> <owner/name>]
@@ -184,9 +202,14 @@ AI_REVIEW_SCHEMA='{
 
 ai() {
   set_pr "$@"
-  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/pr-review" name
+  local name
   name="$(basename "$repo")-$pr-ai"
   if [[ -z ${PR_REVIEW_AI_WORKER:-} ]]; then
+    # Checked here too, so a second press says so in gh-dash and leaves the
+    # running review's log alone instead of truncating it.
+    if kill -0 "$(cat "$cache/$name.lock/pid" 2>/dev/null)" 2>/dev/null; then
+      die "Claude is already reviewing #$pr; the REVIEW item in the menu bar shows how far it is."
+    fi
     mkdir -p "$cache"
     PR_REVIEW_AI_WORKER=1 nohup "$0" ai "$@" >"$cache/$name.log" 2>&1 </dev/null &
     echo "Claude is reviewing #$pr; its findings will land in your pending review."
@@ -197,6 +220,8 @@ ai() {
   dir="$cache/$name"
   log="$cache/$name.log"
   lock="$cache/$name.lock"
+  status_file="$cache/$name.json"
+  stream="$cache/$name.jsonl"
   if ! mkdir "$lock" 2>/dev/null; then
     if kill -0 "$(cat "$lock/pid" 2>/dev/null)" 2>/dev/null; then
       notify "Claude is already reviewing #$pr" "Wait for its notification."
@@ -206,7 +231,9 @@ ai() {
     mkdir "$lock"
   fi
   echo $$ >"$lock/pid"
-  trap 'status=$?; cleanup; rm -rf "$lock"; ((status == 0)) || notify "Claude review of #$pr failed" "See $log"' EXIT
+  started=$(date +%s)
+  write_status preparing
+  trap 'status=$?; ((status == 0)) || { write_status failed; notify "Claude review of #$pr failed" "See $log"; }; cleanup; rm -rf "$lock"' EXIT
 
   cleanup
   resolve_pr
@@ -216,8 +243,54 @@ ai() {
   export PR_REVIEW_HEAD
   PR_REVIEW_HEAD=$(git -C "$repo" rev-parse "$ref")
   echo "Reviewing $nwo#$pr at $PR_REVIEW_HEAD (merge-base $merge_base)"
-  result=$(review_with_claude "$merge_base")
+  write_status reviewing
+  # A failed run still prints its result event, which post_findings reports.
+  result=$(review_with_claude "$merge_base") || true
   post_findings "$result"
+}
+
+# write_status <state>: rewrites the status file the REVIEW item reads, in one
+# rename so it is never read half-written. It is only a display, so a failure to
+# write it never stops the review.
+write_status() {
+  jq -n --arg state "$1" --arg pid "$$" --arg nwo "$nwo" --arg pr "$pr" --arg log "$log" \
+    --arg started "$started" --arg steps "${steps:-0}" --arg activity "${activity:-}" \
+    --arg posted "${posted:-0}" '$ARGS.named' >"$status_file.tmp" &&
+    mv -f "$status_file.tmp" "$status_file" || true
+}
+
+# Reduces Claude's stream-json events to one line per tool call, "tool", name and
+# a short detail, and one for the final result event, "result" and its JSON. The
+# fields are split by a unit separator, which tojson always escapes. A line that
+# isn't JSON is skipped rather than ending the filter, and with it the review.
+PROGRESS_FILTER='
+  def detail:
+    if .file_path then .file_path | split("/") | last
+    else .pattern // .command // .skill // .description // "" | tostring end
+    | gsub("\\s+"; " ") | .[:60];
+  fromjson? |
+  if .type == "assistant" then
+    .message.content[]? | select(.type == "tool_use")
+    | if .name == "StructuredOutput" then ["tool", "writing up the findings", ""]
+      else ["tool", .name, (.input | detail)] end
+    | join("\u001f")
+  elif .type == "result" then "result\u001f" + tojson
+  else empty end'
+
+# Logs each step of the review and keeps the status file on the latest one, then
+# prints the result event for post_findings.
+follow_progress() {
+  local kind name detail steps=0 activity
+  while IFS=$'\x1f' read -r kind name detail; do
+    if [[ $kind == result ]]; then
+      printf '%s\n' "$name"
+      continue
+    fi
+    steps=$((steps + 1))
+    activity="$name${detail:+ $detail}"
+    printf '%s  %s\n' "$(date +%H:%M:%S)" "$activity" >&2
+    write_status reviewing
+  done
 }
 
 review_with_claude() {
@@ -228,22 +301,25 @@ review_with_claude() {
   prompt+=". Your working directory is a checkout of the PR head, and \`git diff --diff-algorithm=myers $merge_base\` shows exactly the PR's changes.
 
 Return every confirmed finding and every advisory note in findings, each anchored to a line inside that diff: side RIGHT with the new file's line number for an added or unchanged line, side LEFT with the old file's line number for a removed line. Write each body as the review comment the author will read: the problem, the concrete input or state that breaks, and what to change. Phrase advisory notes as suggestions. Put the verdict and a one-sentence summary in the other fields."
-  (cd "$dir" && claude -p "$prompt" --output-format json --json-schema "$AI_REVIEW_SCHEMA" \
+  # The raw stream is kept beside the log, for when a review goes wrong.
+  (cd "$dir" && claude -p "$prompt" --output-format stream-json --verbose --json-schema "$AI_REVIEW_SCHEMA" \
     --no-session-persistence --add-dir "$HOME/Projects/.orchestrator" \
     --disallowedTools Edit Write NotebookEdit \
     --allowedTools Skill Read Grep Glob "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" \
-    "Bash(git grep:*)" "Bash(gh pr view:*)" "Bash(gh pr diff:*)")
+    "Bash(git grep:*)" "Bash(gh pr view:*)" "Bash(gh pr diff:*)") |
+    tee "$stream" | jq --unbuffered -rR "$PROGRESS_FILTER" | follow_progress
 }
 
 post_findings() {
   local result=$1 verdict summary path side line body posted=0 unposted=0
   if ! jq -e '.is_error == false and .structured_output != null' <<<"$result" >/dev/null 2>&1; then
     echo "$result"
-    die "Claude returned no review"
+    die "Claude returned no review; its full output is in $stream"
   fi
   verdict=$(jq -r .structured_output.verdict <<<"$result")
   summary=$(jq -r .structured_output.summary <<<"$result")
   echo "Verdict: $verdict. $summary (cost \$$(jq -r '.total_cost_usd // "?"' <<<"$result"))"
+  write_status posting
 
   while IFS=$'\t' read -r path side line body; do
     body=$(base64 -d <<<"$body")
@@ -259,10 +335,11 @@ post_findings() {
     | [.path, (if .side == "LEFT" then "L" else "R" end), .line, (.body | @base64)] | @tsv' <<<"$result")
 
   echo "Posted $posted, could not post $unposted"
+  write_status "done"
   if ((posted + unposted == 0)); then
     notify "Claude found nothing on #$pr" "$summary"
   elif ((unposted == 0)); then
-    notify "Claude left $posted comments on #$pr" "They're in your pending review: press i on the PR, then C to list them."
+    notify "Claude left $posted comments on #$pr" "They're in your pending review. Click REVIEW in the menu bar to see them on GitHub, or press i on the PR, then C."
   else
     notify "Claude left $posted comments on #$pr" "$unposted more couldn't be posted; they're in $log"
   fi
@@ -284,7 +361,7 @@ esac
 
 set_pr "$@"
 ref="refs/pr-review/$pr"
-dir="${XDG_CACHE_HOME:-$HOME/.cache}/pr-review/$(basename "$repo")-$pr"
+dir="$cache/$(basename "$repo")-$pr"
 setup_log=$(mktemp)
 exec 3>&2
 

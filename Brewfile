@@ -15,6 +15,7 @@ brew "git"                    # newer git than the system one
 brew "gh"                     # GitHub CLI
 brew "lazygit"                # terminal UI for git, also the PR review view (see README)
 brew "git-delta"              # syntax-highlighted diffs for git, lazygit and gh-dash
+brew "difftastic"             # syntax-aware diffs, one of the diff views in lazygit
 brew "go"                     # builds gh-dash from the birrejan/gh-dash fork
 brew "stow"                   # symlink farm manager for the dotfiles
 brew "starship"               # cross-shell prompt
@@ -33,6 +34,11 @@ brew "jq"                     # JSON processor (also used by SketchyBar plugins)
 brew "wget"
 brew "tree"
 brew "btop"                   # resource monitor
+
+# Tasks (config under dotfiles/task)
+brew "task"                   # Taskwarrior
+brew "tasksh"                 # Taskwarrior shell, for the weekly `review`
+brew "taskwarrior-tui"        # terminal UI for Taskwarrior
 
 # zsh plugins (sourced from .zshrc — no framework needed)
 brew "zsh-autosuggestions"
@@ -56,8 +62,7 @@ cask "rectangle"                  # simple window snapping (overlaps AeroSpace �
 cask "jordanbaird-ice"            # menu bar item manager (replaces unmaintained Dozer)
 
 # Launchers / productivity
-cask "raycast"
-cask "alfred"                     # Alfred 5 (overlaps Raycast — see README)
+cask "alfred"                     # Alfred 5 launcher
 cask "superwhisper"               # AI dictation
 cask "claude"                     # Claude desktop app
 

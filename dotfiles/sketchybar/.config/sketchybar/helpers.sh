@@ -31,12 +31,3 @@ low_threshold_color() {
   fi
 }
 
-# human_bytes <bytes>
-# Echoes a compact size, e.g. 1.2M / 340K / 12B.
-human_bytes() {
-  awk -v b="$1" 'BEGIN {
-    if (b >= 1048576)   printf "%.1fM", b / 1048576
-    else if (b >= 1024) printf "%.0fK", b / 1024
-    else                printf "%.0fB", b
-  }'
-}

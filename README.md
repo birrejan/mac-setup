@@ -47,12 +47,14 @@ Steps (run in this order, each also runnable via `--only <name>`):
 |------|---------|
 | `git`, `gh` | Git + GitHub CLI |
 | `lazygit`, `git-delta` | terminal UI for git; syntax-highlighted diffs in git, lazygit and gh-dash |
+| `difftastic` | syntax-aware diffs that ignore re-indentation and reflowing; one of lazygit's diff views |
 | `gh dash` | PR dashboard, built from the [birrejan/gh-dash](https://github.com/birrejan/gh-dash) fork with `go` (see [PR review](#pr-review-in-the-terminal-gh-dash--lazygit)) |
 | `stow` | symlinks the dotfiles into `$HOME` |
 | `starship` | shell prompt |
 | `mise` | runtime version manager (Node, Python) |
 | `uv`, `pipx` | Python package / app managers |
 | `fzf`, `ripgrep`, `fd`, `bat`, `eza`, `zoxide`, `jq`, `btop` | modern CLI workflow |
+| `task`, `tasksh`, `taskwarrior-tui` | Taskwarrior to-do list, in the terminal and the menu bar (see [Tasks](#tasks-taskwarrior)) |
 | `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions` | zsh plugins (no framework) |
 | `sketchybar` | the custom menu bar |
 | `borders` | outlines the focused window (JankyBorders) |
@@ -66,7 +68,7 @@ Steps (run in this order, each also runnable via `--only <name>`):
 |----------|------|
 | Terminal / editor | iTerm2, VS Code |
 | Window manager / menu bar | **AeroSpace** (tiling), **SketchyBar** (menu bar), Rectangle, Ice |
-| Launchers / AI | Raycast, Alfred 5, Superwhisper, Claude |
+| Launchers / AI | Alfred 5, Superwhisper, Claude |
 | Comms | Slack, Zoom |
 | Browsers | Google Chrome, Firefox |
 | Security / accounts | Proton Pass, Proton Mail, Proton VPN, Proton Drive, Yubico Authenticator |
@@ -75,7 +77,8 @@ Steps (run in this order, each also runnable via `--only <name>`):
 ### Dotfiles (symlinked by Stow)
 `~/.zshrc`, `~/.zshenv`, `~/.gitconfig`, `~/.gitignore_global`, `~/.config/starship.toml`,
 `~/.config/mise/config.toml`, `~/.config/aerospace/aerospace.toml`, `~/.config/sketchybar/*`,
-`~/.config/lazygit/*`, `~/.config/gh-dash/config.yml`, `~/.local/bin/pr-review`.
+`~/.config/lazygit/*`, `~/.config/gh-dash/config.yml`, `~/.config/task/*`, `~/.local/bin/pr-review`,
+`~/.local/bin/task-review`, `~/.local/bin/task-open`.
 
 ### macOS defaults (`scripts/macos.sh`)
 Fast key repeat, no press-and-hold, tap-to-click, dark mode, Finder (show extensions / path bar /
@@ -90,19 +93,21 @@ These configs were captured from a working machine and are reproduced **verbatim
 
 - **AeroSpace** is a tiling window manager. It starts at login, launches SketchyBar, and notifies it
   on workspace changes. Config: `~/.config/aerospace/aerospace.toml`.
-- **SketchyBar** is the custom top bar: workspace pills, media, calendar, volume, battery, CPU and
-  memory cards, a mic/camera indicator and a tools menu. It runs as a Homebrew service. Config:
-  `~/.config/sketchybar/`; every control is described in `CONTROLS.md`.
-  The CPU and memory cards stay hidden until the machine is busy, then turn amber/red; clicking
-  them opens `btop`. The mic/camera card only appears while either is live.
+- **SketchyBar** is the custom top bar: workspace pills, media, calendar, volume, battery, CPU,
+  memory, disk and network cards, a mic/camera indicator and a tools menu. It runs as a Homebrew
+  service. Config: `~/.config/sketchybar/`; every control is described in `CONTROLS.md`.
+  The CPU and memory cards stay hidden until the machine is busy, then turn amber/red; clicking them
+  opens `btop`. The disk card appears once the drive is 85% full (red from 93%) and the network card
+  only while the Mac is offline. The mic/camera card only appears while either is live. The **TASK**
+  pill shows the Taskwarrior task you started, or what is due today (see [Tasks](#tasks-taskwarrior)).
   The tools menu (`⚙` or `alt + shift + t`) has presentation mode (hides app, media and meeting
   titles), keep-awake, a focus timer and the audio output picker. An `MTG` pill appears 30 minutes
   before a meeting and joins the call in one click. It is fed by a small read-only calendar helper
   built from `native/ToolbarBridge.swift` when the bar starts.
   On a Mac with a camera notch the bar measures it at startup (`notch.sh`) and keeps every item
-  clear of it: the media card is anchored to the right of the notch, and the memory and mic/camera
-  cards each have a twin at position `q` on the left of it. `plugins/notch_apply.sh` picks which
-  copy a display draws, and re-runs on `display_change`.
+  clear of it: the media card is anchored to the right of the notch, and the memory, disk, network
+  and mic/camera cards each have a twin at position `q` on the left of it. `plugins/notch_apply.sh`
+  picks which copy a display draws, and re-runs on `display_change`.
   The controller is tested: `python3 -m unittest discover -s ~/.config/sketchybar/tests`.
 - **JankyBorders** (`borders`) outlines the focused window, since tiled windows have no titlebar
   highlight to show where the keyboard is pointing. AeroSpace starts it. Config:
@@ -144,6 +149,7 @@ merged in, each also on its own branch of the fork so it can go upstream:
 | `fix/keybinding-merge-keeps-non-strings` | non-string keybinding fields (like `background`) survive the config merge |
 | `fix/watch-checks-final-state` | `w`'s notification reports the checks' real final state |
 | `fix/ignore-app-check-suites-that-never-start` | apps that never report a check (Supabase, Claude) no longer show as "in progress" |
+| `feat/behind-indicator` | a column flags PRs whose branch is behind their base, and the preview says it is out-of-date |
 
 `scripts/gh-dash.sh` clones the fork to `~/.local/src/gh-dash`, builds it and installs it as the
 `gh dash` extension. It never touches an existing checkout. To update:
@@ -155,18 +161,61 @@ Keys on a PR in gh-dash (`~/.config/gh-dash/config.yml`):
 |-----|--------|
 | `i` | review in lazygit: the whole PR shows as staged changes in a throwaway worktree |
 | `f` | submit your review (approve / request changes / comment) |
-| `I` | Claude reviews first; its findings land in your pending review |
+| `I` | Claude reviews first; its findings land in your pending review. The menu bar's **REVIEW** pill shows its progress, then the comment count (see `CONTROLS.md`) |
 | `T` | jump to the Claude task session working on the PR |
+| `+` | add a Taskwarrior task to review the PR (see [Tasks](#tasks-taskwarrior)) |
 | `W` | toggle draft / ready for review |
 | `R` | rebase the PR on its base branch, in the background |
 
 Inside a review in lazygit (Files panel, `~/.config/lazygit/pr-review.yml`): `c` comments on a
 line, `C` lists your pending comments, `S` submits the review. Comments stay pending, visible only
-to you, until you submit. `|` cycles delta, side-by-side and plain diffs.
+to you, until you submit. `|` cycles delta, side-by-side, difftastic and plain diffs.
 
 The review commands live in `~/.local/bin/pr-review`. `I` and `T` also need the Claude Code
 orchestrator in `~/Projects/.orchestrator` and its `second-review` skill; without them the
 dashboard shows an error in its footer.
+
+---
+
+## Tasks (Taskwarrior)
+
+[Taskwarrior](https://taskwarrior.org) 3 keeps the to-do list, with a look and a menu bar pill that
+match the rest of the setup. The config is the `task` Stow package (`~/.config/task/`) and the tasks
+themselves live in `~/.local/share/task`, outside the repo.
+
+| Command | Action |
+|---------|--------|
+| `t` | the `next` report: pending tasks, most urgent first |
+| `tt` | `task today`: what is started, overdue, or due or scheduled today |
+| `ta Release the DS due:eod +ds` | add a task |
+| `t 3 start` / `t 3 stop` | say what you're working on; the menu bar shows it and for how long |
+| `td 3` | mark task 3 done |
+| `tui` | taskwarrior-tui, to browse, filter and edit from the keyboard (`?` lists its keys) |
+| `task-open 3` | open task 3's Jira ticket, PR and any link in its annotations |
+| `tasksh`, then `review` | weekly pass over the tasks you haven't looked at in a week |
+
+- **Colors.** `graphite.theme` maps the SketchyBar palette onto Taskwarrior's 256 colors: the started
+  task in bold orange, due today in orange, due this week in amber, overdue in red, muted headers and
+  striped rows. taskwarrior-tui picks up the same colors.
+- **Editing in taskwarrior-tui.** `e` edits the task in a prompt at the bottom of the TUI, filled in
+  with its description, tags, project, priority and due date; change them in place and press Enter.
+  Deleting `+tag` or `project:x` from the line leaves it set: write `-tag` or `project:` instead.
+  `E` opens the full `task edit` form (annotations, `jira`, `pr`, wait) in vim, which `task 3 edit`
+  uses too, instead of VS Code. `m`, the stock modify key, does nothing.
+- **Links.** Two fields tie a task to the work behind it: `jira:NOVA-1043` and
+  `pr:InSpace-GEO/inspace-app#882`. The reports show the Jira key; `task-open <id>`, or `1` on a task
+  in taskwarrior-tui, opens the ticket, the PR and any URL in the annotations.
+- **Reviews from gh-dash.** `+` on a PR adds "Review inspace-app#882: <title>" tagged `+review`, with
+  `pr` set and `jira` taken from the branch or title when either names a ticket. A notification
+  names the task, and a PR that already has a pending task isn't added twice. `+review` adds 4 to a
+  task's urgency, since a waiting review blocks a teammate.
+- **Menu bar.** The **TASK** pill shows the started task and for how long; with nothing started, the
+  overdue count in red, or else the next task due today. It is hidden when none of those apply, and
+  turns amber when something falls due within the hour. A Taskwarrior hook
+  (`hooks/on-exit.sketchybar`) redraws it the moment a task changes. Click it for taskwarrior-tui.
+
+> `due:today` means midnight, so the task counts as overdue all day. Use `due:eod`, or a time such
+> as `due:17:00`.
 
 ---
 
@@ -239,7 +288,7 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
 1. Restart the terminal (`exec zsh`) and restart iTerm2 to load the new config + One Dark profile.
 2. Add the SSH key to GitHub (authentication + signing).
 3. **Grant Accessibility permissions** (System Settings → Privacy & Security → Accessibility):
-   AeroSpace, Rectangle, Raycast, Alfred. *(Cannot be scripted — macOS security.)*
+   AeroSpace, Rectangle, Alfred. *(Cannot be scripted — macOS security.)*
 4. Sign in to apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
 5. Run the healthcheck: `./install.sh --only doctor` (everything should be green).
 
@@ -247,8 +296,8 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
 
 ## Notes / overlaps
 
-- **AeroSpace + Rectangle** and **Alfred 5 + Raycast** are both installed by request, but overlap
-  (tiling vs snapping; two launchers). Drop either by removing its `cask` line from the `Brewfile`.
+- **AeroSpace + Rectangle** are both installed by request, but overlap (tiling vs snapping). Drop
+  either by removing its `cask` line from the `Brewfile`.
 - No Mac App Store apps (avoids interactive sign-in). Add `mas` + `mas "App", id: …` if you want them.
 - iTerm2 preferences are a manual step; full automation can be added later via `PrefsCustomFolder`.
 
@@ -268,7 +317,7 @@ mac-setup/
 │   ├── git.sh  ssh.sh  vscode.sh  iterm2.sh  wm.sh  macos.sh
 │   └── touchid.sh  doctor.sh  dump.sh
 ├── dotfiles/               # Stow packages (zsh, git, starship, mise, aerospace, sketchybar, borders,
-│                           #   lazygit, gh-dash, bin)
+│                           #   lazygit, gh-dash, task, bin)
 ├── iterm2/                 # DynamicProfiles/mac-setup.json (font + One Dark theme)
 └── vscode/                 # settings.json, keybindings.json, extensions.txt
 ```
@@ -283,7 +332,7 @@ mac-setup/
 # or check pieces manually:
 bash -n install.sh scripts/*.sh            # syntax
 brew bundle check --file=Brewfile          # all installed?
-stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar borders lazygit gh-dash bin   # dry-run symlinks
+stow -n -d dotfiles -t ~ zsh git starship mise aerospace sketchybar borders lazygit gh-dash task bin   # dry-run symlinks
 mise current && node -v && python -V        # runtimes
 git config --get commit.gpgsign             # → true
 brew services list | grep sketchybar        # → started

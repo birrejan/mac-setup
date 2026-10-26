@@ -75,7 +75,7 @@ log "All done 🎉  — manual follow-ups"
 cat <<'EOF'
     1. Restart your terminal (or: exec zsh) to load the new shell config.
     2. Add the printed SSH key to GitHub (Authentication + Signing).
-    3. Grant Accessibility permissions: AeroSpace, Rectangle, Raycast, Alfred.
+    3. Grant Accessibility permissions: AeroSpace, Rectangle, Alfred.
     4. Sign in to your apps: Proton, Slack, Claude, Alfred, Superwhisper, Yubico.
     5. Verify a signed commit shows "Verified" on GitHub after step 2.
 

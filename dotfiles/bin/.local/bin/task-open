@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# task-open <filter>...
+#
+# Opens what the matching Taskwarrior tasks link to: the Jira ticket in `jira`,
+# the PR in `pr` (owner/name#number) and every URL in the annotations, e.g.
+# `task-open 4`. taskwarrior-tui runs it with the selected tasks' UUIDs when you
+# press 1. Set JIRA_URL for a Jira site other than InSpace's.
+set -euo pipefail
+
+die() { echo "task-open: $*" >&2; exit 1; }
+
+(($#)) || die "usage: task-open <id or filter>..."
+
+jira_url="${JIRA_URL:-https://inspace.atlassian.net}"
+
+links=$(task rc.verbose=nothing rc.hooks=0 "$@" export | jq -r --arg jira "$jira_url" '
+  .[] |
+  (.jira // empty | "\($jira)/browse/\(.)"),
+  (.pr // empty | capture("^(?<repo>[^#]+)#(?<n>[0-9]+)$") | "https://github.com/\(.repo)/pull/\(.n)"),
+  (.annotations // [] | .[].description | scan("https?://[^\\s<>\"]+"))
+' | awk '!seen[$0]++')
+
+[[ -n "$links" ]] || die "nothing to open: no jira, pr or URL annotation on $*"
+
+while IFS= read -r link; do
+  open "$link"
+done <<<"$links"
