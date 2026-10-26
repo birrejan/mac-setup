@@ -197,6 +197,11 @@ themselves live in `~/.local/share/task`, outside the repo.
 - **Colors.** `graphite.theme` maps the SketchyBar palette onto Taskwarrior's 256 colors: the started
   task in bold orange, due today in orange, due this week in amber, overdue in red, muted headers and
   striped rows. taskwarrior-tui picks up the same colors.
+- **Editing in taskwarrior-tui.** `e` edits the task in a prompt at the bottom of the TUI, filled in
+  with its description, tags, project, priority and due date; change them in place and press Enter.
+  Deleting `+tag` or `project:x` from the line leaves it set: write `-tag` or `project:` instead.
+  `E` opens the full `task edit` form (annotations, `jira`, `pr`, wait) in vim, which `task 3 edit`
+  uses too, instead of VS Code. `m`, the stock modify key, does nothing.
 - **Links.** Two fields tie a task to the work behind it: `jira:NOVA-1043` and
   `pr:InSpace-GEO/inspace-app#882`. The reports show the Jira key; `task-open <id>`, or `1` on a task
   in taskwarrior-tui, opens the ticket, the PR and any URL in the annotations.

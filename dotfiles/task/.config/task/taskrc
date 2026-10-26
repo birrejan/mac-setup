@@ -60,3 +60,14 @@ uda.taskwarrior-tui.style.context.active=black on rgb531
 uda.taskwarrior-tui.style.calendar.title=black on rgb531
 uda.taskwarrior-tui.style.report-menu.active=black on rgb531
 uda.taskwarrior-tui.shortcuts.1=~/.local/bin/task-open
+
+# Editing stays in the terminal. e opens the modify prompt at the bottom of the
+# TUI, filled in with the description, tags, project, priority and due date:
+# change them in place and press Enter (later words win, so project:other
+# replaces the project; deleting +tag from the line keeps the tag, -tag drops
+# it). E opens the full `task edit` form, for annotations, jira, pr or wait, in
+# vim, like git, rather than in $EDITOR (VS Code). m no longer does anything.
+uda.taskwarrior-tui.keyconfig.modify=e
+uda.taskwarrior-tui.keyconfig.edit=E
+uda.taskwarrior-tui.task-report.pre-fill-task-meta-data=true
+editor=vim
