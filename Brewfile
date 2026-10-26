@@ -87,4 +87,5 @@ cask "yubico-authenticator"
 cask "font-hack-nerd-font"        # terminal / Starship / VS Code (Nerd glyphs)
 cask "font-sketchybar-app-font"   # app glyphs in the SketchyBar
 cask "font-sf-pro"                # SketchyBar bar font ("SF Pro")
+cask "font-jetbrains-mono-nerd-font"  # SketchyBar labels ($MONO_FONT in colors.sh)
 cask "sf-symbols"                 # SF Symbols glyphs used by the bar

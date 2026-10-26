@@ -5,7 +5,8 @@
 # checked out into a throwaway detached worktree and soft-reset to its merge-base
 # with the PR's base branch, so lazygit's Files panel shows the whole PR diff as
 # staged changes. The worktree is removed when lazygit exits. Passing the base
-# branch and repo (gh-dash knows both) saves a GitHub round trip on the way in.
+# branch and repo (gh-dash knows both) saves a GitHub round trip on the way in,
+# and lets pr-review clone the repo to <repo-path> when it isn't there yet.
 #
 # That lazygit session also loads pr-review.yml from lazygit's config dir, whose
 # keybindings build a pending GitHub review through these subcommands (they read
@@ -139,15 +140,22 @@ clear_status() {
 }
 
 # set_pr <repo-path> <pr-number> [<base-branch> <owner/name>]
+# gh-dash maps every repo to a path through repoPaths, cloned or not, so a PR in
+# a repo you haven't cloned yet gets cloned to that path first.
 set_pr() {
   if [[ $# -ne 2 && $# -ne 4 ]]; then
     echo "usage: pr-review [ai] <repo-path> <pr-number> [<base-branch> <owner/name>]" >&2
     exit 64
   fi
-  repo=$(git -C "$1" rev-parse --show-toplevel)
   pr=$2
   base=${3:-}
   nwo=${4:-}
+  if [[ ! -e $1 ]]; then
+    [[ -n $nwo ]] || die "nothing at $1; pass <base-branch> <owner/name> too so pr-review can clone the repo there"
+    echo "Cloning $nwo into $1 (first review of this repo)…" >&2
+    gh repo clone "$nwo" "$1" >&2 || die "could not clone $nwo into $1"
+  fi
+  repo=$(git -C "$1" rev-parse --show-toplevel)
 }
 
 # Fills in base and nwo from GitHub unless the caller passed them.

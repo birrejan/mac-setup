@@ -1,0 +1,120 @@
+tap "felixkratz/formulae", trusted: true
+tap "nikitabobko/tap", trusted: true
+tap "peteonrails/voxtype", trusted: true
+tap "supabase/tap"
+# Static checker for GitHub Actions workflow files
+brew "actionlint"
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
+# Resource monitor. C++ version and continuation of bashtop and bpytop
+brew "btop"
+# Diff that understands syntax
+brew "difftastic"
+# Modern, maintained replacement for ls
+brew "eza"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# GitHub command-line tool
+brew "gh"
+# Distributed revision control system
+brew "git"
+# Syntax-highlighting pager for git and diff output
+brew "git-delta"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# Simple terminal UI for git commands
+brew "lazygit"
+# Postgres C API library
+brew "libpq", link: true
+# Exposes your localhost to the world for easy testing and sharing
+brew "localtunnel"
+# Polyglot runtime manager (asdf rust clone)
+brew "mise"
+# Execute binaries from Python packages in isolated environments
+brew "pipx"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
+# Cross-shell prompt for astronauts
+brew "starship"
+# Organize software neatly under a single directory tree (e.g. /usr/local)
+brew "stow"
+# Feature-rich console based todo list manager
+brew "task"
+# Shell wrapper for Taskwarrior commands
+brew "tasksh"
+# Terminal user interface for taskwarrior
+brew "taskwarrior-tui"
+# Terminal multiplexer
+brew "tmux"
+# Display directories as trees (with optional color/HTML output)
+brew "tree"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
+# Internet file retriever
+brew "wget"
+# Shell extension to navigate your filesystem faster
+brew "zoxide"
+# Fish-like fast/unobtrusive autosuggestions for zsh
+brew "zsh-autosuggestions"
+# Additional completion definitions for zsh
+brew "zsh-completions"
+# Fish shell like syntax highlighting for zsh
+brew "zsh-syntax-highlighting"
+# A window border system for macOS
+brew "felixkratz/formulae/borders", trusted: true
+# Custom macOS statusbar with shell plugin, interaction and graph support
+brew "felixkratz/formulae/sketchybar"
+# Supabase CLI
+brew "supabase/tap/supabase", trusted: true
+# AeroSpace is an i3-like tiling window manager for macOS
+cask "nikitabobko/tap/aerospace"
+# Application launcher and productivity software
+cask "alfred"
+# Anthropic's official Claude AI desktop app
+cask "claude"
+# Web browser
+cask "firefox"
+cask "font-fira-code-nerd-font"
+cask "font-hack-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-sf-pro"
+cask "font-sketchybar-app-font"
+# Set of tools to manage resources and applications hosted on Google Cloud
+cask "gcloud-cli"
+# Web browser
+cask "google-chrome"
+# Terminal emulator as alternative to Apple's Terminal app
+cask "iterm2"
+# Menu bar manager
+cask "jordanbaird-ice"
+# Client for Proton Drive
+cask "proton-drive"
+# Client for Proton Mail and Proton Calendar
+cask "proton-mail"
+# Desktop client for Proton Pass
+cask "proton-pass"
+# VPN client focusing on security
+cask "protonvpn"
+# Move and resize windows using keyboard shortcuts or snap areas
+cask "rectangle"
+# Tool that provides consistent, highly configurable symbols for apps
+cask "sf-symbols"
+# Team communication and collaboration software
+cask "slack"
+# Dictation tool including LLM reformatting
+cask "superwhisper"
+# Open-source code editor
+cask "visual-studio-code"
+# Push-to-talk voice-to-text
+cask "peteonrails/voxtype/voxtype"
+# Full-featured companion app to the YubiKey
+cask "yubico-authenticator"
+# Video communication and virtual meeting platform
+cask "zoom"
+vscode "dbaeumer.vscode-eslint"
+vscode "eamodio.gitlens"
+vscode "esbenp.prettier-vscode"
