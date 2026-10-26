@@ -171,9 +171,10 @@ Inside a review in lazygit (Files panel, `~/.config/lazygit/pr-review.yml`): `c`
 line, `C` lists your pending comments, `S` submits the review. Comments stay pending, visible only
 to you, until you submit. `|` cycles delta, side-by-side, difftastic and plain diffs.
 
-The review commands live in `~/.local/bin/pr-review`. `I` and `T` also need the Claude Code
-orchestrator in `~/Projects/.orchestrator` and its `second-review` skill; without them the
-dashboard shows an error in its footer.
+The review commands live in `~/.local/bin/pr-review`. When a PR's repo isn't cloned yet, `i` and
+`I` first clone it to the path `repoPaths` maps it to (`~/Projects/<name>`). `I` and `T` also need
+the Claude Code orchestrator in `~/Projects/.orchestrator` and its `second-review` skill; without
+them the dashboard shows an error in its footer.
 
 ---
 
